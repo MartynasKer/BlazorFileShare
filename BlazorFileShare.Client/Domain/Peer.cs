@@ -18,8 +18,7 @@ namespace BlazorFileShare.Client.Domain
             PeerConnectionId = Id != default ? Id : Guid.NewGuid();
             RTCPeerConnection.OnDataChannel += RegisterDC;
             RTCPeerConnection.OnIceCandidate += async (s, e) => await onIceCandidate(Name, PeerConnectionId, e);
-            FileDownloadAction += downloadFile;    
-
+            FileDownloadAction += downloadFile;
         }
 
         public RTCPeerConnection RTCPeerConnection { get; set; }
@@ -92,17 +91,22 @@ namespace BlazorFileShare.Client.Domain
 
         }
 
+        public void SendMessage(string message)
+        {
+            if(RTCDataChannel.ReadyState == RTCDataChannelState.Open)
+            {
+                RTCDataChannel.Send(message);
+            }
+        }
         void ProcessData(object sender, byte[] e)
         {
 
-            
             if (CurrentPayloadType == DataChannelPayloadType.Metadata)
             {
                 
                 CurrentPayloadType = DataChannelPayloadType.File;
                 CurrentFileMetadata = FileMetadata.Desserialize(e);
-                
-                
+                SendMessage("ack");
                 return;
             }
             if (CurrentPayloadType == DataChannelPayloadType.File)

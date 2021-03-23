@@ -21,5 +21,6 @@ namespace BlazorFileShare.Client.Services
         void SendChunk(byte[] buffer, string name);
         void SendMetadata(FileMetadata metadata, string name);
         void CloseConnections();
+        void AddListener(Action<string> action, string name);
     }
 }

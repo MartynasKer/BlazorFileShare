@@ -26,7 +26,7 @@ namespace BlazorFileShare.Client.Services
             this.hubClient.OnInfo += Inform;
             this.hubClient.OnConnectionStateChanged += InvokeStatusChange;
             this.hubClient.OnIceCandidate += rTCInterop.AddIceAsync;
-            
+
         }
         public List<string> Clients { get; set; } = new List<string>();
         public string MyName { get; private set; }
@@ -69,7 +69,7 @@ namespace BlazorFileShare.Client.Services
             Clients.Add(request.Name);
             OnStatusChange.Invoke();
         }
-        
+
         public void SendTestMessage(string message)
         {
             rTCInterop.SendMessageToAll(message);
@@ -78,13 +78,13 @@ namespace BlazorFileShare.Client.Services
         private async Task OnPeerJoinedAsync(RoomMember member)
         {
             Console.WriteLine("peer joined");
-            await rTCInterop.SetSDPOfferAsync(member.Offer, member.Name,OnIceCandidateAsync, OnRTCConnected);
+            await rTCInterop.SetSDPOfferAsync(member.Offer, member.Name, OnIceCandidateAsync, OnRTCConnected);
             var answer = await rTCInterop.CreateSDPAnswerAsync(member.Name, member.Offer.PeerConnectionId);
             answer.Name = MyName;
             await hubClient.SendAnswerAsync(answer, member.Name, _roomId);
             Clients.Add(member.Name);
             OnStatusChange.Invoke();
-            
+
         }
 
         private async Task OnIceCandidateAsync(string name, Guid peerId, RTCIceCandidateInit rTCIceCandidate)
@@ -112,8 +112,9 @@ namespace BlazorFileShare.Client.Services
 
         public async Task LeaveRoomAsync()
         {
-            
+
             await hubClient.DisconnectFromRoomAsync(_roomId);
+            rTCInterop.CloseConnections();
             RoomCode = 0;
             _roomId = default;
             MyName = null;
@@ -136,9 +137,21 @@ namespace BlazorFileShare.Client.Services
         {
             Console.WriteLine($"sending metadata to {name}");
             rTCInterop.SendMetadata(metadata, name);
-            
-            return true;
 
+            bool messageReceived = false;
+            bool ack = false;
+            rTCInterop.AddListener(x =>
+            {
+                messageReceived = true;
+                if (x == "ack")
+                    ack = true;
+            }, name);
+            while (!messageReceived)
+            {
+                await Task.Delay(50);
+            }
+            return ack;
+           
 
         }
 

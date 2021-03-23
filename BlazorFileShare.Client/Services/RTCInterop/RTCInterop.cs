@@ -105,7 +105,11 @@ namespace BlazorFileShare.Client.Services
             }
         }
 
-
+     
+        public void AddListener(Action<string> action, string name)
+        {
+            ClientList.SingleOrDefault(x => x.Name == name).AddMessageListener(action);
+        }
         public void CloseConnections()
         {
             ClientList.ForEach(x => x.RTCPeerConnection.close());
