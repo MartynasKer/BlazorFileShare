@@ -1,49 +1,50 @@
 ﻿@namespace BlazorFileShare.Client.Pages
 @page "/"
 
-<h1>Connector</h1>
-<p>Code</p>
-
-<div style="max-width: 480px;">
-    <div class="form-row mb-4">
-        <div class="col">
-            <input class="form-control" type="number" maxlength="4" @bind-value="code" />
+<div class="card mx-auto" style="max-width: 400px;">
+    <div class="card-body">
+        <h1>Connector</h1>
+        <p>Code</p>
+        <div class="form-row mb-4">
+            <div class="col">
+                <input class="form-control" type="number" maxlength="4" @bind-value="code" />
+            </div>
+            <div class="col-auto">
+                <button class="btn btn-success mr-1" @onclick="CreateRoomAsync">Create</button>
+                <button class="btn btn-primary" @onclick="JoinRoomAsync">Join</button>
+            </div>
         </div>
-        <div class="col-auto">
-            <button class="btn btn-success mr-1" @onclick="CreateRoomAsync">Create</button>
-            <button class="btn btn-primary" @onclick="JoinRoomAsync">Join</button>
+
+        <div class="form-row mb-4">
+            <div class="col">
+                <input class="form-control" type="text" @bind-value="message">
+            </div>
+            <div class="col-auto">
+                <button class="btn btn-primary" @onclick="SendMessage">Test Out Channel</button>
+            </div>
         </div>
-    </div>
 
-    <div class="form-row mb-4">
-        <div class="col">
-            <input class="form-control" type="text" @bind-value="message">
+        <div class="mb-4">
+            <label for="file-input" class="btn btn-success mb-0">Upload</label>
+            <InputFile OnChange="async (e)=>await OnFileChange(e, ClientRoomService.Clients[0])" id="file-input" class="d-none"></InputFile>
         </div>
-        <div class="col-auto">
-            <button class="btn btn-primary" @onclick="SendMessage">Test Out Channel</button>
+
+        <div class="mb-4">
+            <button class="btn btn-outline-dark">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-clockwise" viewBox="0 0 16 16">
+                    <path fill-rule="evenodd" d="M8 3a5 5 0 1 0 4.546 2.914.5.5 0 0 1 .908-.417A6 6 0 1 1 8 2v1z" />
+                    <path d="M8 4.466V.534a.25.25 0 0 1 .41-.192l2.36 1.966c.12.1.12.284 0 .384L8.41 4.658A.25.25 0 0 1 8 4.466z" />
+                </svg>
+            </button>
         </div>
+
+        <p>@ClientRoomService.State</p>
+        <ol>
+            @foreach (var client in ClientRoomService.Clients)
+            {
+                <o>@client</o>
+
+            }
+        </ol>
     </div>
-
-    <div class="mb-4">
-        <label for="file-input" class="btn btn-success mb-0">Upload</label>
-        <InputFile OnChange="async (e)=>await OnFileChange(e, ClientRoomService.Clients[0])" id="file-input" class="d-none"></InputFile>
-    </div>
-
-    <div class="mb-4">
-        <button class="btn btn-outline-dark">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-clockwise" viewBox="0 0 16 16">
-                <path fill-rule="evenodd" d="M8 3a5 5 0 1 0 4.546 2.914.5.5 0 0 1 .908-.417A6 6 0 1 1 8 2v1z" />
-                <path d="M8 4.466V.534a.25.25 0 0 1 .41-.192l2.36 1.966c.12.1.12.284 0 .384L8.41 4.658A.25.25 0 0 1 8 4.466z" />
-            </svg>
-        </button>
-    </div>
-
-    <p>@ClientRoomService.State</p>
-    <ol>
-        @foreach (var client in ClientRoomService.Clients)
-        {
-            <o>@client</o>
-
-        }
-    </ol>
 </div>
