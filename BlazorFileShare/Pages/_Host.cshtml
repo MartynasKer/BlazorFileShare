@@ -1,0 +1,30 @@
+﻿@page "/"
+@using BlazorFileShare.Client
+@namespace BlazorFileShare.Server.Pages
+
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+@{
+    Layout = null;
+}
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>BlazorFileShare</title>
+    <base href="/" />
+    <link href="css/bootstrap/bootstrap.min.css" rel="stylesheet" />
+    <link href="css/app.css" rel="stylesheet" />
+    <link href="BlazorFileShare.Client.styles.css" rel="stylesheet" />
+    <link href="manifest.json" rel="manifest" />
+    <link rel="apple-touch-icon" sizes="512x512" href="icon-512.png" />
+</head>
+
+<body>
+    <component type="typeof(App)" render-mode="WebAssembly">
+        <script src="_framework/blazor.webassembly.js"></script>
+        <script src="ts/download.js"></script>
+</body>
+
+</html>
