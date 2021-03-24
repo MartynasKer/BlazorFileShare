@@ -7,6 +7,20 @@ body {
 }
 
 .btn, .form-control {
-    border-radius: 50rem;
     box-shadow: 0 .125rem .25rem rgba(0,0,0,.075);
+}
+
+.fadeIn {
+    animation-name: fadeIn;
+    animation-duration: .3s;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
 }
