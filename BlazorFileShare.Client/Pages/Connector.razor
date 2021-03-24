@@ -1,89 +1,81 @@
 ﻿@namespace BlazorFileShare.Client.Pages
 @page "/"
 
-<div class="mx-auto" >
-    <div>
-        @if (ClientRoomService.Connected)
-        {
-            <div class="text-center">
-                <p class="h4">I am @ClientRoomService.MyName</p>
-            </div>
-        }
-        @if (!ClientRoomService.Connected)
-        {
+<div class="container h-100 py-3">
+    <div class="row h-100">
+        <div class="col m-auto text-center" style="max-width: 480px;">
+            @if (ClientRoomService.Connected)
+            {
+                <h1 class="mb-4">I am <span class="text-@(ClientRoomService.MyName == "A" ? "info" : "danger")">@ClientRoomService.MyName</span></h1>
+            }
+            @if (!ClientRoomService.Connected)
+            {
 
-
-            <div class="my-auto">
                 @if (State == UIState.Creating || State == UIState.Joining)
                 {
-                    <div class="mx-auto">
+                    <div class="mb-2">
                         <input class="form-control" type="number" maxlength="4" @bind-value="code" />
                     </div>
                 }
                 @if (State == UIState.Creating || State == UIState.Idle)
                 {
-                    <div class="mx-auto">
-                        <button class="btn btn-success mr-1" @onclick="CreateRoomAsync">Create Room</button>
+                    <div class="mb-2">
+                        <button class="btn btn-success" @onclick="CreateRoomAsync">Create Room</button>
                     </div>
 
                 }
                 @if (State == UIState.Joining || State == UIState.Idle)
                 {
-                    <div class="mx-auto">
+                    <div class="mb-2">
                         <button class="btn btn-primary" @onclick="JoinRoomAsync">Join Room</button>
                     </div>
                 }
-            </div>
 
-        }
-        else
-        {
-            <div class="form-row mb-4">
-                <div class="col">
-                    <input class="form-control" type="text" @bind-value="message">
-                </div>
-                <div class="col-auto">
-                    <button class="btn btn-primary" @onclick="SendMessage">Test Out Channel</button>
-                </div>
-            </div>
+            }
+            else
+            {
 
-
-
-            <div class="text-center">
                 @foreach (var client in ClientRoomService.Clients)
                 {
-                    <div class="mb-4">
-
-                        <label for="file-input" class="btn btn-success mb-0 rounded-pill">
+                    <div class="mb-2">
+                        <label for="file-input" class="btn btn-lg btn-@(client == "A" ? "info" : "danger") mb-0 rounded-pill">
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-laptop" viewBox="0 0 16 16">
                                 <path d="M13.5 3a.5.5 0 0 1 .5.5V11H2V3.5a.5.5 0 0 1 .5-.5h11zm-11-1A1.5 1.5 0 0 0 1 3.5V12h14V3.5A1.5 1.5 0 0 0 13.5 2h-11zM0 12.5h16a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 0 12.5z" />
                             </svg>
-                            @client
+                            Upload to @client
                         </label>
                         <InputFile OnChange="async (e) => await OnFileChange(e, client)" id="file-input" class="d-none"></InputFile>
                     </div>
-
                 }
-            </div>
 
-        }
-
-
+                <div class="form-row mt-4">
+                    <div class="col">
+                        <input class="form-control" type="text" @bind-value="message">
+                    </div>
+                    <div class="col-auto">
+                        <button class="btn btn-primary" @onclick="SendMessage">Test Out Channel</button>
+                    </div>
+                </div>
+            }
+        </div>
     </div>
-
 </div>
 
-<div class="fixed-bottom text-center">
-    @if (ClientRoomService.State == Microsoft.AspNetCore.SignalR.Client.HubConnectionState.Disconnected)
-    {
-        <div class="mb-4">
-            <button class="btn btn-outline-dark" @onclick="ReconnectAsync">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-clockwise" viewBox="0 0 16 16">
-                    <path fill-rule="evenodd" d="M8 3a5 5 0 1 0 4.546 2.914.5.5 0 0 1 .908-.417A6 6 0 1 1 8 2v1z" />
-                    <path d="M8 4.466V.534a.25.25 0 0 1 .41-.192l2.36 1.966c.12.1.12.284 0 .384L8.41 4.658A.25.25 0 0 1 8 4.466z" />
-                </svg>
-            </button>
+<div class="fixed-bottom bg-white py-2 text-center border-top">
+    <div class="row">
+        <div class="col">
+            Signaling server connection status: @ClientRoomService.State
         </div>
-    }
-    <p>Signaling server connection status: @ClientRoomService.State</p>
+        @if (ClientRoomService.State == Microsoft.AspNetCore.SignalR.Client.HubConnectionState.Disconnected)
+        {
+            <div class="col-auto">
+                <button class="btn btn-sm btn-outline-dark" @onclick="ReconnectAsync">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-clockwise" viewBox="0 0 16 16">
+                        <path fill-rule="evenodd" d="M8 3a5 5 0 1 0 4.546 2.914.5.5 0 0 1 .908-.417A6 6 0 1 1 8 2v1z" />
+                        <path d="M8 4.466V.534a.25.25 0 0 1 .41-.192l2.36 1.966c.12.1.12.284 0 .384L8.41 4.658A.25.25 0 0 1 8 4.466z" />
+                    </svg>
+                </button>
+            </div>
+        }
+    </div>
 </div>
