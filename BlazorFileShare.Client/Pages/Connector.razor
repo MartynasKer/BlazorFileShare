@@ -14,20 +14,20 @@
                 @if (State == UIState.Creating || State == UIState.Joining)
                 {
                     <div class="mb-2">
-                        <input class="form-control" type="number" maxlength="4" @bind-value="code" />
+                        <input class="form-control rounded-pill"  type="number" maxlength="4" @bind-value="code" />
                     </div>
                 }
                 @if (State == UIState.Creating || State == UIState.Idle)
                 {
                     <div class="mb-2">
-                        <button class="btn btn-success" @onclick="CreateRoomAsync">Create Room</button>
+                        <button class="btn btn-success rounded-pill" @onclick="CreateRoomAsync">Create Room</button>
                     </div>
 
                 }
                 @if (State == UIState.Joining || State == UIState.Idle)
                 {
                     <div class="mb-2">
-                        <button class="btn btn-primary" @onclick="JoinRoomAsync">Join Room</button>
+                        <button class="btn btn-primary rounded-pill" @onclick="JoinRoomAsync">Join Room</button>
                     </div>
                 }
 
@@ -50,10 +50,10 @@
 
                 <div class="form-row mt-4">
                     <div class="col">
-                        <input class="form-control" type="text" @bind-value="message">
+                        <input class="form-control rounded-pill" type="text" @bind-value="message">
                     </div>
                     <div class="col-auto">
-                        <button class="btn btn-primary" @onclick="SendMessage">Test Out Channel</button>
+                        <button class="btn btn-primary rounded-pill" @onclick="SendMessage">Test Out Channel</button>
                     </div>
                 </div>
             }
