@@ -28,5 +28,7 @@ namespace BlazorFileShare.Client.Services
 
         event Func<string, Task> OnConnectionStateChanged;
         event Func<RTCIceCandidate, Guid, Task> OnIceCandidate;
+
+        Task ReconectAsync();
     }
 }

@@ -91,5 +91,11 @@ namespace BlazorFileShare.Client.Services
         { 
             await _hub.SendAsync("SendOffersAsync", offers, fromName, roomId);
         }
+
+        public async Task ReconectAsync()
+        {
+            await _hub.StartAsync();
+            await OnConnectionStateChanged.Invoke("Connected to hub");
+        }
     }
 }

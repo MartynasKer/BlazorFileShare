@@ -104,10 +104,20 @@ namespace BlazorFileShare.Client.Services
 
             offers.ForEach(x => x.Name = name);
             await hubClient.SendOffersAsync(offers, name, _roomId);
+            OnStatusChange.Invoke();
         }
         public async Task JoinRoomAsync(int code)
         {
             await hubClient.JoinRoomAsync(code, OnJoinRoom);
+        }
+
+        void ResetRoomInfo()
+        {
+            RoomCode = 0;
+            _roomId = default;
+            MyName = null;
+            Connected = false;
+            OnStatusChange.Invoke();
         }
 
         public async Task LeaveRoomAsync()
@@ -115,11 +125,8 @@ namespace BlazorFileShare.Client.Services
 
             await hubClient.DisconnectFromRoomAsync(_roomId);
             rTCInterop.CloseConnections();
-            RoomCode = 0;
-            _roomId = default;
-            MyName = null;
-            Connected = false;
-            OnStatusChange.Invoke();
+            ResetRoomInfo();
+            
 
         }
 
@@ -155,6 +162,11 @@ namespace BlazorFileShare.Client.Services
 
         }
 
-
+        public async Task ReconnectToRoomAsync()
+        {
+            
+            await hubClient.ReconectAsync();
+            ResetRoomInfo();
+        }
     }
 }

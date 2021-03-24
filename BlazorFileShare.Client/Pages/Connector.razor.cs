@@ -19,17 +19,34 @@ namespace BlazorFileShare.Client.Pages
         protected string answer;
         protected int code;
         protected string message;
+        protected UIState State; 
+        
 
         private async Task CreateRoomAsync()
         {
-            await ClientRoomService.CreateRoomAsync(code);
 
+            if (State == UIState.Idle)
+            {
+                State = UIState.Creating;
+                return;
+            }
+            if (State == UIState.Creating)
+            {
+                await ClientRoomService.CreateRoomAsync(code);
+            }
 
         }
         private async Task JoinRoomAsync()
         {
-            await ClientRoomService.JoinRoomAsync(code);
-
+            if (State == UIState.Idle)
+            {
+                State = UIState.Joining;
+                return;
+            }
+            if (State == UIState.Joining)
+            {
+                await ClientRoomService.JoinRoomAsync(code);
+            }
         }
 
         private async Task OnFileChange(InputFileChangeEventArgs args, string name)
@@ -40,12 +57,13 @@ namespace BlazorFileShare.Client.Pages
 
                 var file = files[i];
                 var metadata = new FileMetadata { ContentType = file.ContentType, LastModified = file.LastModified, Name = file.Name, Size = file.Size };
-                var ack = await ClientRoomService.SendFileMetadataAsync(metadata, ClientRoomService.Clients[0]);
+                var ack = await ClientRoomService.SendFileMetadataAsync(metadata, name);
                 if(ack == false)
                 {
                     continue;
                 }
-                using var stream = file.OpenReadStream(1024 * 1024 * 1024);
+                
+                using var stream = file.OpenReadStream(1099511627776);//max 1 TB
                 
                 byte[] buffer = new byte[1024 * 16]; // read in chunks of 16KB
                 int bytesRead;
@@ -55,14 +73,20 @@ namespace BlazorFileShare.Client.Pages
                     if(bytesRead < buffer.Length)
                     {
                         buffer = new byte[bytesRead];
-                        ClientRoomService.SendFileChunk(buffer, ClientRoomService.Clients[0]);
+                        ClientRoomService.SendFileChunk(buffer, name);
                         break;
                     }
-                    ClientRoomService.SendFileChunk(buffer, ClientRoomService.Clients[0]);
+                    ClientRoomService.SendFileChunk(buffer, name);
 
                 }
 
             }
+        }
+
+        private async Task ReconnectAsync()
+        {
+            await ClientRoomService.ReconnectToRoomAsync();
+
         }
 
         private void SendMessage()
@@ -74,5 +98,13 @@ namespace BlazorFileShare.Client.Pages
         {
             ClientRoomService.OnStatusChange += this.StateHasChanged;
         }
+    }
+    public enum UIState
+    {
+        Idle,
+        Joining,
+        Creating,
+        Connected
+
     }
 }
