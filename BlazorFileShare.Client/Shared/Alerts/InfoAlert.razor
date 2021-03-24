@@ -1,0 +1,53 @@
+﻿@using BlazorFileShare.Client.Services
+@using BlazorFileShare.Shared.Domain
+@inject IHubClient hubService
+
+<div>
+@if (display)
+{ 
+    @if (info.Success == true)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            @info.Message
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+    }
+    else
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            @info.Message
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+    }
+}
+</div>
+
+@code {
+    Info info;
+    bool display = false;
+    protected override void OnInitialized()
+    {
+        hubService.OnInfo += DisplayInfo;
+    }
+
+    void DisplayInfo(Info info)
+    {
+        this.info = info;
+        ShowAlert().Start();
+    }
+
+    async Task ShowAlert()
+    {
+        display = true;
+        this.StateHasChanged();
+        await Task.Delay(5000);
+        display = false;
+        this.StateHasChanged();
+    }
+
+
+}
