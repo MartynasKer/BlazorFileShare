@@ -6,27 +6,27 @@
         <div class="col m-auto text-center" style="max-width: 480px;">
             @if (ClientRoomService.Connected)
             {
-                <h1 class="mb-4">I am <span class="text-@(ClientRoomService.MyName == "A" ? "info" : "danger")">@ClientRoomService.MyName</span></h1>
+                <h1>I am <span class="text-@(ClientRoomService.MyName == "A" ? "info" : "danger")">@ClientRoomService.MyName</span></h1>
             }
             @if (!ClientRoomService.Connected)
             {
 
                 @if (State == UIState.Creating || State == UIState.Joining)
                 {
-                    <div class="mb-2">
+                    <div class="mb-3">
                         <input class="form-control" type="number" maxlength="4" @bind-value="code" />
                     </div>
                 }
                 @if (State == UIState.Creating || State == UIState.Idle)
                 {
-                    <div class="mb-2">
+                    <div class="mb-3">
                         <button class="btn btn-success" @onclick="CreateRoomAsync">Create Room</button>
                     </div>
 
                 }
                 @if (State == UIState.Joining || State == UIState.Idle)
                 {
-                    <div class="mb-2">
+                    <div class="mb-3">
                         <button class="btn btn-primary" @onclick="JoinRoomAsync">Join Room</button>
                     </div>
                 }
@@ -37,7 +37,7 @@
 
                 @foreach (var client in ClientRoomService.Clients)
                 {
-                    <div class="mb-2">
+                    <div class="mb-3">
                         <label for="file-input" class="btn btn-lg btn-@(client == "A" ? "info" : "danger") mb-0 rounded-pill">
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-laptop" viewBox="0 0 16 16">
                                 <path d="M13.5 3a.5.5 0 0 1 .5.5V11H2V3.5a.5.5 0 0 1 .5-.5h11zm-11-1A1.5 1.5 0 0 0 1 3.5V12h14V3.5A1.5 1.5 0 0 0 13.5 2h-11zM0 12.5h16a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 0 12.5z" />
@@ -53,7 +53,7 @@
                         <input class="form-control" type="text" @bind-value="message">
                     </div>
                     <div class="col-auto">
-                        <button class="btn btn-primary" @onclick="SendMessage">Test Out Channel</button>
+                        <button class="btn btn-secondary" @onclick="SendMessage">Send message</button>
                     </div>
                 </div>
             }
