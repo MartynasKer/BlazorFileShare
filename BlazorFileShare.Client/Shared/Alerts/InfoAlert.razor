@@ -7,7 +7,6 @@
 { 
     @if (info.Success == true)
     {
-
         <div class="alert alert-success alert-dismissible fade show" role="alert">
             @info.Message
             <button type="button" class="close" data-dismiss="alert" aria-label="Close">
@@ -17,7 +16,6 @@
     }
     else
     {
-
         <div class="alert alert-danger alert-dismissible fade show" role="alert">
             @info.Message
             <button type="button" class="close" data-dismiss="alert" aria-label="Close">
@@ -33,21 +31,17 @@
     bool display = false;
     protected override void OnInitialized()
     {
-        Console.WriteLine("starting");
         hubService.OnInfo += DisplayInfo;
     }
 
     void DisplayInfo(Info info)
     {
         this.info = info;
-        Console.WriteLine("called");
         ShowAlert().Start();
     }
 
     async Task ShowAlert()
     {
-        Console.WriteLine("displaying");
-
         display = true;
         this.StateHasChanged();
         await Task.Delay(5000);
