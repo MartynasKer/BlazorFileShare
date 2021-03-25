@@ -12,15 +12,17 @@ namespace BlazorFileShare.Client.Domain
         event Action<Peer> FileDownloadAction;
 
         private readonly Action<Peer> OnClose;
+        event Action<Message> onMessage;
 
         public Peer(string name,
-            Guid Id = default, Func<string, Guid, RTCIceCandidateInit, Task> onIceCandidate = null, Action<Peer> downloadFile = null, Action<Peer> OnClose = null)
+            Guid Id = default, Func<string, Guid, RTCIceCandidateInit, Task> onIceCandidate = null, Action<Peer> downloadFile = null, Action<Peer> OnClose = null, Action<Message> onMessage = null)
         {
             Name = name;
             RTCPeerConnection = new RTCPeerConnection();
             PeerConnectionId = Id != default ? Id : Guid.NewGuid();
             RTCPeerConnection.OnDataChannel += RegisterDC;
             this.OnClose = OnClose;
+            this.onMessage += onMessage;
             RTCPeerConnection.OnIceCandidate += async (s, e) => await onIceCandidate(Name, PeerConnectionId, e);
             FileDownloadAction += downloadFile;
         }
@@ -88,9 +90,10 @@ namespace BlazorFileShare.Client.Domain
             {
                 CurrentPayloadType = result;
             }
-            else
+            else if(e != "ack")
             {
                 Console.WriteLine(e);
+                onMessage?.Invoke(new Message(e, Name));
             }
             return;
 

@@ -1,0 +1,59 @@
+﻿@using BlazorFileShare.Client.Services
+@using BlazorFileShare.Client.Domain
+@inject IRTCInterop rtcInterop
+@inject IJSRuntime jsRuntime
+
+
+    <div aria-live="polite" aria-atomic="true" style="position: absolute; top: 0; right: 0;">
+     
+        @foreach (var message in Messages)
+        {
+            <!-- Then put toasts within -->
+            <div class="toast" role="alert" aria-live="assertive" data-delay="15000" aria-atomic="true">
+                <div class="toast-header">
+                    <strong class="mr-auto">@message.Name</strong>
+                    <button type="button" class="ml-2 mb-1 close" data-dismiss="toast" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="toast-body">
+                    @message.Data
+                </div>
+            </div>
+        }
+    </div>
+
+
+
+
+@code {
+    Queue<Message> Messages = new();
+
+    protected override void OnInitialized()
+    {
+        rtcInterop.OnMessage += AddMessage;
+
+    }
+
+    async void AddMessage(Message m)
+    {
+
+        Messages.Enqueue(m);
+        this.StateHasChanged();
+        await Task.Delay(15000);
+        Messages.Dequeue();
+        this.StateHasChanged();
+
+
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await jsRuntime.InvokeVoidAsync("showToast");
+    }
+
+
+
+
+
+}

@@ -17,6 +17,9 @@ namespace BlazorFileShare.Client.Services
         private readonly IJSRuntime jSRuntime;
 
         public event Action<string> OnPeerLeft;
+
+        public event Action<Message> OnMessage;
+
         public RTCInterop(IJSRuntime jSRuntime)
         {
             this.jSRuntime = jSRuntime;
@@ -43,7 +46,7 @@ namespace BlazorFileShare.Client.Services
             for (int i = 0; i < memberCount - 1; i++)
             {
 
-                var peer = new Peer(null, default, OnIceCandidate, DownloadFile, RemovePeer);
+                var peer = new Peer(null, default, OnIceCandidate, DownloadFile, RemovePeer, OnMessage.Invoke);
                 peer.CreateDataChannel(i.ToString());
                 var result = await peer.RTCPeerConnection.createOffer();
                 var offer = result.sdp;
@@ -81,7 +84,7 @@ namespace BlazorFileShare.Client.Services
 
         public async Task SetSDPOfferAsync(OfferRequest offer, string name, Func<string, Guid, RTCIceCandidateInit, Task> OnIceCandidate, Action<string> onRTCConnected)
         {
-            var peer = new Peer(name, offer.PeerConnectionId, OnIceCandidate, DownloadFile, RemovePeer);
+            var peer = new Peer(name, offer.PeerConnectionId, OnIceCandidate, DownloadFile, RemovePeer, OnMessage.Invoke);
 
             var offerSDP = new RTCSessionDescriptionInit(offer.Offer, RTCSdpType.Offer);
             await peer.RTCPeerConnection.setRemoteDescription(offerSDP);

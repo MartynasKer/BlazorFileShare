@@ -15,6 +15,7 @@ namespace BlazorFileShare.Client.Pages
         [Inject]
         private IClientRoomService ClientRoomService { get; set; }
 
+        private Dictionary<string, InputFile> fileInputs = new();
         protected string offer;
         protected string answer;
         protected int code;
@@ -51,10 +52,11 @@ namespace BlazorFileShare.Client.Pages
 
         private async Task OnFileChange(InputFileChangeEventArgs args, string name)
         {
+            
             var files = args.GetMultipleFiles();
             for (int i = 0; i < args.FileCount; i++)
             {
-
+                
                 var file = files[i];
                 var metadata = new FileMetadata { ContentType = file.ContentType, LastModified = file.LastModified, Name = file.Name, Size = file.Size };
                 var ack = await ClientRoomService.SendFileMetadataAsync(metadata, name);
@@ -96,6 +98,7 @@ namespace BlazorFileShare.Client.Pages
         private void SendMessage()
         {
             ClientRoomService.SendTestMessage(message);
+            message = null;
         }
 
         protected override void OnInitialized()
