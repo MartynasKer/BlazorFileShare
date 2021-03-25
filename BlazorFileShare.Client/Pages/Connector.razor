@@ -1,9 +1,9 @@
 ﻿@namespace BlazorFileShare.Client.Pages
 @page "/"
 
-<div class="container h-100">
+<div class="container h-100 pt-3 overflow-auto" style="padding-bottom: calc(75px + 1rem);">
     <div class="row justify-content-center align-items-center h-100">
-        <div class="col m-auto text-center" style="max-width: 480px;">
+        <div class="col text-center" style="max-width: 480px;">
             @if (ClientRoomService.Connected)
             {
                 <h1 class="mb-4">I am <span class="text-muted">@ClientRoomService.MyName</span></h1>
@@ -52,7 +52,9 @@
                         <input class="form-control" type="text" placeholder="Enter test message" @bind-value="message">
                     </div>
                     <div class="col-auto">
-                        <button class="btn btn-secondary" @onclick="SendMessage">Send message</button>
+                        <button class="btn btn-secondary" @onclick="SendMessage">
+                            Send
+                        </button>
                     </div>
                 </div>
             }
@@ -64,9 +66,9 @@
     <div class="container">
         <InfoAlert></InfoAlert>
     </div>
-    <div class="bg-white py-3 text-center border-top">
-        <div class="container-fluid">
-            <div class="row align-items-center justify-content-center">
+    <div class="bg-white text-center border-top d-flex" style="height: 75px;">
+        <div class="container-fluid h-100">
+            <div class="row align-items-center justify-content-center h-100">
                 <div class="col-auto">
                     Signaling server connection status: @ClientRoomService.State
                 </div>
