@@ -11,19 +11,19 @@ namespace BlazorFileShare.Domain
     public class Room
     {
         public Guid Id { get; set; }
-        ConcurrentDictionary<RoomMember,int> Members { get; set; } = new();
+        ConcurrentDictionary<string, RoomMember> Members { get; set; } = new();
 
         
         public RoomMember AddMember(string connectionId)
         {
             var member = new RoomMember { Name = GenerateName(), ConnectionId = connectionId };
-            var exist = Members.Keys.SingleOrDefault(x => x.Name == member.Name);
+            var exist = Members.Values.SingleOrDefault(x => x.Name == member.Name);
             while (exist is not null)
             {
                 member.Name = GenerateName(exist.Name);
-                exist = Members.Keys.SingleOrDefault(x => x.Name == member.Name);
+                exist = Members.Values.SingleOrDefault(x => x.Name == member.Name);
             }
-            Members.TryAdd(member, 0);
+            Members.TryAdd(connectionId, member);
             return member;
         }
         public int MemberCount
@@ -35,18 +35,17 @@ namespace BlazorFileShare.Domain
         }
         public void RemoveMember(string connectionId)
         {
-            var memberToRemove = Members.Keys.SingleOrDefault(x => x.ConnectionId == connectionId);
-            Members.TryRemove(memberToRemove, out int i);
+            Members.TryRemove(connectionId, out var member);
         }
 
         public RoomMember GetRoomMember(string name)
         {
-            return Members.Keys.SingleOrDefault(x => x.Name == name);
+            return Members.Values.SingleOrDefault(x => x.Name == name);
         }
 
         public List<RoomMember> GetRoomMembers()
         {
-            return Members.Keys.ToList();
+            return Members.Values.ToList();
         }
 
         public string GenerateName(string lastName = null)
@@ -59,7 +58,7 @@ namespace BlazorFileShare.Domain
                 return ((char)((int)lastName[0] + 1)).ToString();
             }
             
-            return ((char)((int)Members.Last().Key.Name[0] + 1)).ToString();
+            return ((char)((int)Members.Last().Value.Name[0] + 1)).ToString();
         }
 
     }

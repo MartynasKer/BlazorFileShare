@@ -26,6 +26,12 @@ namespace BlazorFileShare.Client.Services
             this.hubClient.OnInfo += Inform;
             this.hubClient.OnConnectionStateChanged += InvokeStatusChange;
             this.hubClient.OnIceCandidate += rTCInterop.AddIceAsync;
+            this.rTCInterop.OnPeerLeft += (name) =>
+            {
+                Clients.Remove(name);
+                OnStatusChange?.Invoke();
+
+            };
 
         }
         public List<string> Clients { get; set; } = new List<string>();
@@ -117,6 +123,7 @@ namespace BlazorFileShare.Client.Services
             _roomId = default;
             MyName = null;
             Connected = false;
+            Clients.Clear();
             OnStatusChange.Invoke();
         }
 

@@ -11,6 +11,8 @@ namespace BlazorFileShare.Client.Services
 {
     public interface IRTCInterop
     {
+        event Action<string> OnPeerLeft;
+
         Task<AnswerRequest> CreateSDPAnswerAsync(string name, Guid peerId);
         Task SetSDPAnswerAsync(AnswerRequest answer, string name, Action<string> onRTCConnected);
         Task<List<OfferRequest>> CreateSDPOffersAsync(int memberCount, Func<string, Guid, RTCIceCandidateInit, Task> OnIceCandidate);

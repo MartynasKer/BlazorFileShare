@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net.WebRTC;
 using System.Threading.Tasks;
 
@@ -21,7 +22,13 @@ namespace BlazorFileShare.Hubs
         {
             _roomService = roomService;
             this.logger = logger;
+            
         }
+        public override async Task OnDisconnectedAsync(Exception exception)
+        {
+            await Task.Run(()=>_roomService.RemoveMember(Context.ConnectionId));
+        }
+
         public async Task JoinRoomAsync(int roomId)
         {
             var roomRequest = new RoomRequest(roomId, Context.GetHttpContext());
@@ -104,7 +111,11 @@ namespace BlazorFileShare.Hubs
         public async Task DisconnectFromRoomAsync(Guid roomId)
         {
             await Groups.RemoveFromGroupAsync(Context.ConnectionId, roomId.ToString());
-            _roomService.RemoveRoomMember(roomId, Context.ConnectionId);
+            var members = _roomService.GetRoomMembers(roomId);
+            var member = members.SingleOrDefault(x => x.ConnectionId == Context.ConnectionId);
+            _roomService.RemoveMember(Context.ConnectionId);
+
+            await Clients.Group(roomId.ToString()).SendAsync("SendInfo", new Info($"{member.Name} has left the room", false));
         }
 
 

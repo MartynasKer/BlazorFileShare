@@ -15,8 +15,8 @@ namespace BlazorFileShare.Services
 
         RoomMember GetRoomMember(Guid roomId, string name);
 
-        bool RemoveRoomMember(Guid roomId, string ConnectionId);
         Room GetRoomById(Guid roomId);
         List<RoomMember> GetRoomMembers(Guid roomId);
+        void RemoveMember(string ConnectionId);
     }
 }

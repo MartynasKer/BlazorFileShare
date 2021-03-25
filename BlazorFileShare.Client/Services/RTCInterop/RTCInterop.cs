@@ -16,6 +16,7 @@ namespace BlazorFileShare.Client.Services
 
         private readonly IJSRuntime jSRuntime;
 
+        public event Action<string> OnPeerLeft;
         public RTCInterop(IJSRuntime jSRuntime)
         {
             this.jSRuntime = jSRuntime;
@@ -31,13 +32,18 @@ namespace BlazorFileShare.Client.Services
             return new AnswerRequest(name, answer.sdp, peerId);
         }
 
+        private void RemovePeer(Peer peer)
+        {
+            ClientList.Remove(peer);
+            OnPeerLeft?.Invoke(peer.Name);
+        }
         public async Task<List<OfferRequest>> CreateSDPOffersAsync(int memberCount, Func<string, Guid, RTCIceCandidateInit, Task> OnIceCandidate)
         {
             List<OfferRequest> list = new();
             for (int i = 0; i < memberCount - 1; i++)
             {
-                
-                var peer = new Peer(null, default, OnIceCandidate, DownloadFile);
+
+                var peer = new Peer(null, default, OnIceCandidate, DownloadFile, RemovePeer);
                 peer.CreateDataChannel(i.ToString());
                 var result = await peer.RTCPeerConnection.createOffer();
                 var offer = result.sdp;
@@ -59,7 +65,7 @@ namespace BlazorFileShare.Client.Services
                     FileName = peer.CurrentFileMetadata.Name,
                     ContentType = peer.CurrentFileMetadata.ContentType
                 });
-            
+
         }
         public async Task SetSDPAnswerAsync(AnswerRequest answerRequest, string name, Action<string> onRTCConnected)
         {
@@ -70,13 +76,13 @@ namespace BlazorFileShare.Client.Services
 
         }
 
-       
+
 
 
         public async Task SetSDPOfferAsync(OfferRequest offer, string name, Func<string, Guid, RTCIceCandidateInit, Task> OnIceCandidate, Action<string> onRTCConnected)
         {
-            var peer = new Peer(name, offer.PeerConnectionId, OnIceCandidate, DownloadFile);
-           
+            var peer = new Peer(name, offer.PeerConnectionId, OnIceCandidate, DownloadFile, RemovePeer);
+
             var offerSDP = new RTCSessionDescriptionInit(offer.Offer, RTCSdpType.Offer);
             await peer.RTCPeerConnection.setRemoteDescription(offerSDP);
             ClientList.Add(peer);
@@ -105,7 +111,7 @@ namespace BlazorFileShare.Client.Services
             }
         }
 
-     
+
         public void AddListener(Action<string> action, string name)
         {
             ClientList.SingleOrDefault(x => x.Name == name).AddMessageListener(action);

@@ -88,6 +88,10 @@ namespace BlazorFileShare.Client.Pages
             await ClientRoomService.ReconnectToRoomAsync();
 
         }
+        private async Task LeaveRoomAsync()
+        {
+            await ClientRoomService.LeaveRoomAsync();
+        }
 
         private void SendMessage()
         {

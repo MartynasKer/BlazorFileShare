@@ -12,7 +12,16 @@ namespace BlazorFileShare.Services
     {
         readonly ConcurrentDictionary<RoomRequest, Room> rooms = new();
 
-        
+        public void RemoveMember(string ConnectionId)
+        {
+            rooms.Values.ToList().ForEach(x => x.RemoveMember(ConnectionId));
+            var emptyRooms = rooms.Where(x => x.Value.MemberCount == 0);
+            foreach(var room in emptyRooms)
+            {
+                rooms.TryRemove(room);
+            }
+
+        }
 
         public Room CreateRoom(RoomRequest roomRequest)
         {
@@ -50,11 +59,6 @@ namespace BlazorFileShare.Services
             return null;
         }
 
-        public bool RemoveRoomMember(Guid roomId, string ConnectionId)
-        {
-            var room = rooms.Values.SingleOrDefault(x => x.Id == roomId);
-            room.RemoveMember(ConnectionId);
-            return true;
-        }
+
     }
 }

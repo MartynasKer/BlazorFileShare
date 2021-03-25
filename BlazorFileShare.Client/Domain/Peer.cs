@@ -11,12 +11,16 @@ namespace BlazorFileShare.Client.Domain
 
         event Action<Peer> FileDownloadAction;
 
-        public Peer(string name, Guid Id=default, Func<string, Guid, RTCIceCandidateInit, Task> onIceCandidate=null, Action<Peer> downloadFile = null)
+        private readonly Action<Peer> OnClose;
+
+        public Peer(string name,
+            Guid Id = default, Func<string, Guid, RTCIceCandidateInit, Task> onIceCandidate = null, Action<Peer> downloadFile = null, Action<Peer> OnClose = null)
         {
             Name = name;
             RTCPeerConnection = new RTCPeerConnection();
             PeerConnectionId = Id != default ? Id : Guid.NewGuid();
             RTCPeerConnection.OnDataChannel += RegisterDC;
+            this.OnClose = OnClose;
             RTCPeerConnection.OnIceCandidate += async (s, e) => await onIceCandidate(Name, PeerConnectionId, e);
             FileDownloadAction += downloadFile;
         }
@@ -62,6 +66,7 @@ namespace BlazorFileShare.Client.Domain
         {
             dc.OnMessage += ProcessMessage;
             dc.OnDataMessage += ProcessData;
+            dc.OnClose += (s, e)=> OnClose?.Invoke(this); 
             dc.OnOpen += (s, e) => Console.WriteLine("its open!");
             Console.WriteLine(dc.ReadyState);
             RTCDataChannel = dc;
@@ -93,7 +98,7 @@ namespace BlazorFileShare.Client.Domain
 
         public void SendMessage(string message)
         {
-            if(RTCDataChannel.ReadyState == RTCDataChannelState.Open)
+            if (RTCDataChannel.ReadyState == RTCDataChannelState.Open)
             {
                 RTCDataChannel.Send(message);
             }
@@ -103,7 +108,7 @@ namespace BlazorFileShare.Client.Domain
 
             if (CurrentPayloadType == DataChannelPayloadType.Metadata)
             {
-                
+
                 CurrentPayloadType = DataChannelPayloadType.File;
                 CurrentFileMetadata = FileMetadata.Desserialize(e);
                 SendMessage("ack");
@@ -111,7 +116,7 @@ namespace BlazorFileShare.Client.Domain
             }
             if (CurrentPayloadType == DataChannelPayloadType.File)
             {
-                
+
                 FileBuffer.Add(e);
                 ChunksReceived++;
                 if (ChunksReceived == CurrentFileMetadata.TotalChunks)
@@ -129,6 +134,7 @@ namespace BlazorFileShare.Client.Domain
         {
             RTCDataChannel = RTCPeerConnection.createDataChannel(channel);
             RTCDataChannel.OnOpen += (s, e) => Console.WriteLine("its open!");
+            RTCDataChannel.OnClose += (s, e) => OnClose.Invoke(this);
             RTCDataChannel.OnMessage += ProcessMessage;
             RTCDataChannel.OnDataMessage += ProcessData;
 
@@ -136,7 +142,7 @@ namespace BlazorFileShare.Client.Domain
 
         public void AddMessageListener(Action<string> act)
         {
-            RTCDataChannel.OnMessage += (s, e)=> act(e);
+            RTCDataChannel.OnMessage += (s, e) => act(e);
         }
 
 
