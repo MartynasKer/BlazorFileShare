@@ -17,6 +17,12 @@ namespace BlazorFileShare.Domain
         public RoomMember AddMember(string connectionId)
         {
             var member = new RoomMember { Name = GenerateName(), ConnectionId = connectionId };
+            var exist = Members.Keys.SingleOrDefault(x => x.Name == member.Name);
+            while (exist is not null)
+            {
+                member.Name = GenerateName(exist.Name);
+                exist = Members.Keys.SingleOrDefault(x => x.Name == member.Name);
+            }
             Members.TryAdd(member, 0);
             return member;
         }
@@ -43,13 +49,16 @@ namespace BlazorFileShare.Domain
             return Members.Keys.ToList();
         }
 
-        public string GenerateName()
+        public string GenerateName(string lastName = null)
         {
             if(Members.IsEmpty)
             {
                 return "A";
             }
-
+            if(lastName != null){
+                return ((char)((int)lastName[0] + 1)).ToString();
+            }
+            
             return ((char)((int)Members.Last().Key.Name[0] + 1)).ToString();
         }
 
