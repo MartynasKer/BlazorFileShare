@@ -76,7 +76,7 @@ namespace BlazorFileShare.Client.Services
             var answerSDP = new RTCSessionDescriptionInit(answerRequest.Answer, RTCSdpType.Answer);
             peer.Name = name;
             await peer.RTCPeerConnection.setRemoteDescription(answerSDP);
-
+            await peer.TrickleIceAsync();
         }
 
 

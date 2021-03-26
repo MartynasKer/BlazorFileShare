@@ -18,9 +18,37 @@ namespace BlazorFileShare.Client.Pages
         private Dictionary<string, InputFile> fileInputs = new();
         protected string offer;
         protected string answer;
-        protected int code;
+        int code;
+        protected int Code {
+            get
+            {
+                return code;
+            }
+            set
+            {
+                if(value < 10000)
+                {
+                    code = value;
+                    this.StateHasChanged();
+                }
+            }
+        
+        }
+
+        bool CanConnect
+        {
+            get
+            {
+                if(State != UIState.Idle && State != UIState.Connected)
+                {
+                    return Code <= 999;
+                }
+                return false;
+            }
+
+        }
         protected string message;
-        protected UIState State; 
+        protected UIState State = UIState.Idle; 
         
 
         private async Task CreateRoomAsync()
@@ -49,7 +77,17 @@ namespace BlazorFileShare.Client.Pages
                 await ClientRoomService.JoinRoomAsync(code);
             }
         }
+        private async Task OnFileChangeAll(InputFileChangeEventArgs args)
+        {
 
+
+            foreach(var client in ClientRoomService.Clients)
+            {
+                await OnFileChange(args, client);
+            }
+
+
+        }
         private async Task OnFileChange(InputFileChangeEventArgs args, string name)
         {
             

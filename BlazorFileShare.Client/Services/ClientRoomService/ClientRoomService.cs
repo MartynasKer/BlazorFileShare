@@ -17,6 +17,7 @@ namespace BlazorFileShare.Client.Services
 
         private readonly IRTCInterop rTCInterop;
 
+        private readonly Queue<ICECandidateMessage> IceQueue = new();
         public ClientRoomService(IRTCInterop rTCInterop, IHubClient hubClient)
         {
             this.rTCInterop = rTCInterop;
@@ -97,7 +98,7 @@ namespace BlazorFileShare.Client.Services
         {
             if (rTCIceCandidate.candidate is null || rTCIceCandidate is null)
                 return;
-
+       
             await hubClient.SignalIceAsync(name, peerId, rTCIceCandidate, _roomId);
         }
 

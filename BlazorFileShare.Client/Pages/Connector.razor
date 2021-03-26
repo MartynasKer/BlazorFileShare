@@ -17,20 +17,27 @@
                 {
                     <div class="form-group mb-4">
                         <label for="room-number">Room number</label>
-                        <input id="room-number" class="form-control" type="number" maxlength="4" placeholder="Enter room number" @bind-value="code" />
+                        <input id="room-number" class="form-control" type="number" maxlength="4" placeholder="Enter room number" @bind-value:event="oninput" @bind-value="Code" />
                     </div>
                 }
                 @if (State == UIState.Creating || State == UIState.Idle)
                 {
                     <div class="mb-3">
-                        <button class="btn btn-success" @onclick="CreateRoomAsync">Create Room</button>
+                        <button class="btn btn-success" @onclick="CreateRoomAsync" disabled="@CanConnect">Create Room</button>
                     </div>
 
                 }
                 @if (State == UIState.Joining || State == UIState.Idle)
                 {
                     <div class="mb-3">
-                        <button class="btn btn-primary" @onclick="JoinRoomAsync">Join Room</button>
+                        <button class="btn btn-primary" disabled="@CanConnect" @onclick="JoinRoomAsync">Join Room</button>
+                    </div>
+                }
+
+                @if (State == UIState.Joining || State == UIState.Creating)
+                {
+                    <div class="mb-3">
+                        <button class="btn btn-info"  @onclick="()=>State = UIState.Idle">Back</button>
                     </div>
                 }
 
@@ -64,6 +71,12 @@
                         <button class="btn btn-secondary" @onclick="LeaveRoomAsync">
                             Leave Room
                         </button>
+                    </div>
+                    <div class="col-auto">
+                        <label for="file_input_all" class="btn btn-secondary">
+                            Upload to all
+                        </label>
+                        <InputFile OnChange="async (e) => await OnFileChangeAll(e)" id="file_input_all" class="d-none"></InputFile>
                     </div>
                 </div>
             }

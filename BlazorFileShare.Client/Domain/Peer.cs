@@ -13,7 +13,10 @@ namespace BlazorFileShare.Client.Domain
 
         private readonly Action<Peer> OnClose;
         event Action<Message> onMessage;
+        private Func<string, Guid, RTCIceCandidateInit, Task> onIceCandidate;
 
+
+        public Queue<RTCIceCandidateInit> iceQueue = new();
         public Peer(string name,
             Guid Id = default, Func<string, Guid, RTCIceCandidateInit, Task> onIceCandidate = null, Action<Peer> downloadFile = null, Action<Peer> OnClose = null, Action<Message> onMessage = null)
         {
@@ -23,7 +26,8 @@ namespace BlazorFileShare.Client.Domain
             RTCPeerConnection.OnDataChannel += RegisterDC;
             this.OnClose = OnClose;
             this.onMessage += onMessage;
-            RTCPeerConnection.OnIceCandidate += async (s, e) => await onIceCandidate(Name, PeerConnectionId, e);
+            this.onIceCandidate = onIceCandidate;
+            RTCPeerConnection.OnIceCandidate += async (s, e) => await AddIceCandidateAsync(s, e);
             FileDownloadAction += downloadFile;
         }
 
@@ -68,7 +72,7 @@ namespace BlazorFileShare.Client.Domain
         {
             dc.OnMessage += ProcessMessage;
             dc.OnDataMessage += ProcessData;
-            dc.OnClose += (s, e)=> OnClose?.Invoke(this); 
+            dc.OnClose += (s, e) => OnClose?.Invoke(this);
             dc.OnOpen += (s, e) => Console.WriteLine("its open!");
             Console.WriteLine(dc.ReadyState);
             RTCDataChannel = dc;
@@ -90,7 +94,7 @@ namespace BlazorFileShare.Client.Domain
             {
                 CurrentPayloadType = result;
             }
-            else if(e != "ack")
+            else if (e != "ack")
             {
                 Console.WriteLine(e);
                 onMessage?.Invoke(new Message(e, Name));
@@ -141,11 +145,41 @@ namespace BlazorFileShare.Client.Domain
             RTCDataChannel.OnMessage += ProcessMessage;
             RTCDataChannel.OnDataMessage += ProcessData;
 
+
         }
 
         public void AddMessageListener(Action<string> act)
         {
             RTCDataChannel.OnMessage += (s, e) => act(e);
+        }
+
+        public async Task TrickleIceAsync()
+        {
+            while (iceQueue.Count > 0)
+            {
+                var ice = iceQueue.Dequeue();
+                await onIceCandidate(Name, PeerConnectionId, ice);
+            }
+
+        }
+
+        async Task AddIceCandidateAsync(object sender, RTCIceCandidateInit iceCandidateInit)
+        {
+
+            if (Name != null)
+            {
+                await onIceCandidate(Name, PeerConnectionId, iceCandidateInit);
+                while (iceQueue.Count > 0)
+                {
+                    var ice = iceQueue.Dequeue();
+                    await onIceCandidate(Name, PeerConnectionId, ice);
+                }
+            }
+            else
+            {
+                iceQueue.Enqueue(iceCandidateInit);
+            }
+
         }
 
 

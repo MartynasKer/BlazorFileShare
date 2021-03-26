@@ -65,12 +65,12 @@ namespace System.Net.WebRTC
 					iceCandidate.candidate = c?.GetObjectProperty("candidate") as string;
 					iceCandidate.sdpMid = c?.GetObjectProperty("sdpMid") as string;
 					iceCandidate.sdpMLineIndex = (int)c?.GetObjectProperty("sdpMLineIndex");
+					Console.WriteLine(iceCandidate.candidate);
 				}
 				OnIceCandidate?.Invoke(this, new RTCIceCandidateInit()
 				{
 					candidate = iceCandidate
 				});
-				Console.WriteLine("new ice");
 				e.Dispose();
             });
 
@@ -161,7 +161,9 @@ namespace System.Net.WebRTC
 
 		public async Task<RTCSessionDescriptionInit> createOffer()
         {
-			var task = (Task<object>)innerRtcPeerConnection.Invoke("createOffer");
+			var json = (JSObject)System.Runtime.InteropServices.JavaScript.Runtime.GetGlobalObject("JSON");
+			var config = json.Invoke("parse", "{\"iceRestart\": true}");
+			var task = (Task<object>)innerRtcPeerConnection.Invoke("createOffer",config);
 
 			var offer = await task as JSObject;
 
