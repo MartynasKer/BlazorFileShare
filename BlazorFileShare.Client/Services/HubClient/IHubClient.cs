@@ -12,8 +12,8 @@ namespace BlazorFileShare.Client.Services
 {
     public interface IHubClient
     {
-        Task CreateRoomAsync(int roomCode, Action<Guid, string, int> returnAction);
-        Task JoinRoomAsync(int roomCode, Action<Guid, string, int> returnAction);
+        Task CreateRoomAsync(int roomCode, Action<Guid, RoomMember, int> returnAction);
+        Task JoinRoomAsync(int roomCode, Action<Guid, RoomMember, int> returnAction);
         Task DisconnectFromRoomAsync(Guid roomId);
         Task SendAnswerAsync(AnswerRequest request, string name, Guid roomId);
 

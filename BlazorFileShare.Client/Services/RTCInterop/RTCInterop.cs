@@ -1,4 +1,7 @@
-﻿using BlazorFileShare.Client.Domain;
+﻿using Blazored.Modal;
+using Blazored.Modal.Services;
+using BlazorFileShare.Client.Domain;
+using BlazorFileShare.Client.Shared;
 using BlazorFileShare.Shared;
 using BlazorFileShare.Shared.Domain;
 using Microsoft.JSInterop;
@@ -13,6 +16,7 @@ namespace BlazorFileShare.Client.Services
     public class RTCInterop : IRTCInterop
     {
         private readonly List<Peer> ClientList = new();
+        private readonly IModalService modalService;
 
         private readonly IJSRuntime jSRuntime;
 
@@ -20,9 +24,10 @@ namespace BlazorFileShare.Client.Services
 
         public event Action<Message> OnMessage;
 
-        public RTCInterop(IJSRuntime jSRuntime)
+        public RTCInterop(IJSRuntime jSRuntime, IModalService modalService)
         {
             this.jSRuntime = jSRuntime;
+            this.modalService = modalService;
         }
 
         public async Task<AnswerRequest> CreateSDPAnswerAsync(string name, Guid peerId)
@@ -32,7 +37,7 @@ namespace BlazorFileShare.Client.Services
 
             var answer = await peer.RTCPeerConnection.createAnswer();
             await peer.RTCPeerConnection.setLocalDescription(answer);
-            return new AnswerRequest(name, answer.sdp, peerId);
+            return new AnswerRequest(null, answer.sdp, peerId);
         }
 
         private void RemovePeer(Peer peer)
@@ -47,6 +52,7 @@ namespace BlazorFileShare.Client.Services
             {
 
                 var peer = new Peer(null, default, OnIceCandidate, DownloadFile, RemovePeer, OnMessage.Invoke);
+                peer.OnFileMetadata += OnMetadataAsync;
                 peer.CreateDataChannel(i.ToString());
                 var result = await peer.RTCPeerConnection.createOffer();
                 var offer = result.sdp;
@@ -56,6 +62,24 @@ namespace BlazorFileShare.Client.Services
                 list.Add(offerRequest);
             }
             return list;
+        }
+
+        async void OnMetadataAsync(Peer peer, FileMetadata metadata)
+        {
+            var parameters = new ModalParameters();
+            parameters.Add("Name", peer.Name);
+            parameters.Add("FileSize", metadata.Size);
+            parameters.Add("FileName", metadata.Name);
+            var modal = modalService.Show<MetadataModal>("File donwload request",parameters);
+            var result = await modal.Result;
+            if(result.Cancelled == false)
+            {
+                peer.SendMessage("ack");
+            }
+            else
+            {
+                peer.SendMessage("cancel");
+            }
         }
 
         void DownloadFile(Peer peer)
@@ -70,10 +94,11 @@ namespace BlazorFileShare.Client.Services
                 });
 
         }
-        public async Task SetSDPAnswerAsync(AnswerRequest answerRequest, string name, Action<string> onRTCConnected)
+        public async Task SetSDPAnswerAsync(AnswerRequest answerRequest, string name, Action onRTCConnected)
         {
             var peer = ClientList.SingleOrDefault(x => x.PeerConnectionId == answerRequest.PeerConnectionId);
             var answerSDP = new RTCSessionDescriptionInit(answerRequest.Answer, RTCSdpType.Answer);
+            peer.RTCDataChannel.OnOpen += (s,e) => onRTCConnected.Invoke();
             peer.Name = name;
             await peer.RTCPeerConnection.setRemoteDescription(answerSDP);
             await peer.TrickleIceAsync();
@@ -82,10 +107,10 @@ namespace BlazorFileShare.Client.Services
 
 
 
-        public async Task SetSDPOfferAsync(OfferRequest offer, string name, Func<string, Guid, RTCIceCandidateInit, Task> OnIceCandidate, Action<string> onRTCConnected)
+        public async Task SetSDPOfferAsync(OfferRequest offer, string name, Func<string, Guid, RTCIceCandidateInit, Task> OnIceCandidate, Action onRTCConnected)
         {
-            var peer = new Peer(name, offer.PeerConnectionId, OnIceCandidate, DownloadFile, RemovePeer, OnMessage.Invoke);
-
+            var peer = new Peer(name, offer.PeerConnectionId, OnIceCandidate, DownloadFile, RemovePeer, OnMessage.Invoke, onRTCConnected);
+            peer.OnFileMetadata += OnMetadataAsync;
             var offerSDP = new RTCSessionDescriptionInit(offer.Offer, RTCSdpType.Offer);
             await peer.RTCPeerConnection.setRemoteDescription(offerSDP);
             ClientList.Add(peer);

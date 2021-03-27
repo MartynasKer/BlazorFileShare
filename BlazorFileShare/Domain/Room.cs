@@ -1,9 +1,11 @@
 ﻿using BlazorFileShare.Shared.Domain;
+using Microsoft.AspNetCore.Http;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.WebRTC;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace BlazorFileShare.Domain
@@ -12,11 +14,24 @@ namespace BlazorFileShare.Domain
     {
         public Guid Id { get; set; }
         ConcurrentDictionary<string, RoomMember> Members { get; set; } = new();
+        public bool IsMobileDevice(HttpContext context)
+        {
+            var userAgent = context.Request.Headers["User-Agent"];
+            var deviceName = "Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini";
+            return Regex.IsMatch(userAgent, deviceName);
+        }
 
-        
-        public RoomMember AddMember(string connectionId)
+        public RoomMember AddMember(string connectionId, Microsoft.AspNetCore.Http.HttpContext httpContext)
         {
             var member = new RoomMember { Name = GenerateName(), ConnectionId = connectionId };
+            if (IsMobileDevice(httpContext))
+            {
+                member.Type = DeviceType.Mobile;
+            }
+            else
+            {
+                member.Type = DeviceType.Desktop;
+            }
             var exist = Members.Values.SingleOrDefault(x => x.Name == member.Name);
             while (exist is not null)
             {

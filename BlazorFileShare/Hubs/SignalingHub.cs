@@ -39,9 +39,9 @@ namespace BlazorFileShare.Hubs
                     new Info("Failed to join room, room with such room number does not exist.", false));
                 return;
             }
-            var member = room.AddMember(Context.ConnectionId);
+            var member = room.AddMember(Context.ConnectionId, Context.GetHttpContext());
             await Groups.AddToGroupAsync(Context.ConnectionId, room.Id.ToString());
-            await Clients.Caller.SendAsync("ConnectedToRoom", room.Id, member.Name, room.MemberCount);
+            await Clients.Caller.SendAsync("ConnectedToRoom", room.Id, member, room.MemberCount);
 
             await Clients.Caller.SendAsync("SendInfo", new Info("joined room " + roomId, true));
             logger.LogInformation($"Client {Context.ConnectionId} joined room {roomId} from {roomRequest.Ip}");
@@ -59,9 +59,9 @@ namespace BlazorFileShare.Hubs
                     new Info("Failed to create room, room with such room number already exists in the network.", false));
                 return;
             }
-            var member = room.AddMember(Context.ConnectionId);
+            var member = room.AddMember(Context.ConnectionId, Context.GetHttpContext());
             await Groups.AddToGroupAsync(Context.ConnectionId, room.Id.ToString());
-            await Clients.Caller.SendAsync("ConnectedToRoom", room.Id, member.Name, room.MemberCount);
+            await Clients.Caller.SendAsync("ConnectedToRoom", room.Id, member, room.MemberCount);
             await Clients.Caller.SendAsync("SendInfo", new Info("Room Created", true));
             logger.LogInformation($"Client {Context.ConnectionId} created room {roomId} with {roomRequest.Ip}");
         }

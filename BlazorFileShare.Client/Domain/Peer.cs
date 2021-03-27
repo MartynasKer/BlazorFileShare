@@ -8,17 +8,21 @@ namespace BlazorFileShare.Client.Domain
 {
     public class Peer
     {
-
+        Action OnConnected;
         event Action<Peer> FileDownloadAction;
-
         private readonly Action<Peer> OnClose;
         event Action<Message> onMessage;
         private Func<string, Guid, RTCIceCandidateInit, Task> onIceCandidate;
 
-
+        public event Action<Peer, FileMetadata> OnFileMetadata; 
         public Queue<RTCIceCandidateInit> iceQueue = new();
         public Peer(string name,
-            Guid Id = default, Func<string, Guid, RTCIceCandidateInit, Task> onIceCandidate = null, Action<Peer> downloadFile = null, Action<Peer> OnClose = null, Action<Message> onMessage = null)
+            Guid Id = default,
+            Func<string, Guid, RTCIceCandidateInit, Task> onIceCandidate = null,
+            Action<Peer> downloadFile = null,
+            Action<Peer> OnClose = null,
+            Action<Message> onMessage = null,
+            Action onRTCConnected = null)
         {
             Name = name;
             RTCPeerConnection = new RTCPeerConnection();
@@ -27,6 +31,7 @@ namespace BlazorFileShare.Client.Domain
             this.OnClose = OnClose;
             this.onMessage += onMessage;
             this.onIceCandidate = onIceCandidate;
+            OnConnected = onRTCConnected;
             RTCPeerConnection.OnIceCandidate += async (s, e) => await AddIceCandidateAsync(s, e);
             FileDownloadAction += downloadFile;
         }
@@ -74,6 +79,7 @@ namespace BlazorFileShare.Client.Domain
             dc.OnDataMessage += ProcessData;
             dc.OnClose += (s, e) => OnClose?.Invoke(this);
             dc.OnOpen += (s, e) => Console.WriteLine("its open!");
+            dc.OnOpen += (s, e) => OnConnected?.Invoke();
             Console.WriteLine(dc.ReadyState);
             RTCDataChannel = dc;
         }
@@ -94,7 +100,7 @@ namespace BlazorFileShare.Client.Domain
             {
                 CurrentPayloadType = result;
             }
-            else if (e != "ack")
+            else if (e != "ack" && e!= "cancel")
             {
                 Console.WriteLine(e);
                 onMessage?.Invoke(new Message(e, Name));
@@ -118,7 +124,7 @@ namespace BlazorFileShare.Client.Domain
 
                 CurrentPayloadType = DataChannelPayloadType.File;
                 CurrentFileMetadata = FileMetadata.Desserialize(e);
-                SendMessage("ack");
+                OnFileMetadata?.Invoke(this, CurrentFileMetadata);
                 return;
             }
             if (CurrentPayloadType == DataChannelPayloadType.File)

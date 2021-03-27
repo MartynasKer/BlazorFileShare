@@ -15,10 +15,10 @@ namespace BlazorFileShare.Client.Services
 
         event Action<Message> OnMessage;
         Task<AnswerRequest> CreateSDPAnswerAsync(string name, Guid peerId);
-        Task SetSDPAnswerAsync(AnswerRequest answer, string name, Action<string> onRTCConnected);
+        Task SetSDPAnswerAsync(AnswerRequest answer, string name, Action onRTCConnected);
         Task<List<OfferRequest>> CreateSDPOffersAsync(int memberCount, Func<string, Guid, RTCIceCandidateInit, Task> OnIceCandidate);
         Task AddIceAsync(RTCIceCandidate arg1, Guid arg2);
-        Task SetSDPOfferAsync(OfferRequest offer, string name, Func<string, Guid, RTCIceCandidateInit, Task> OnIceCandidate, Action<string> onRTCConnected);
+        Task SetSDPOfferAsync(OfferRequest offer, string name, Func<string, Guid, RTCIceCandidateInit, Task> OnIceCandidate, Action onRTCConnected);
         void SendMessageToAll(string message);
         void SendBufferToAll(byte[] buffer);
         void SendChunk(byte[] buffer, string name);

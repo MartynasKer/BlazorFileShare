@@ -1,4 +1,5 @@
 ﻿using BlazorFileShare.Client.Domain;
+using BlazorFileShare.Domain;
 using Microsoft.AspNetCore.SignalR.Client;
 using System;
 using System.Collections.Generic;
@@ -10,11 +11,11 @@ namespace BlazorFileShare.Client.Services
     public interface IClientRoomService
     {
         event Action OnStatusChange;
-        string MyName { get; }
+        RoomMember MyMember { get; }
         int RoomCode { get; }
         bool Connected { get; }
 
-        List<string> Clients { get; }
+        List<RoomMember> Clients { get; }
         HubConnectionState State { get; }
         Task JoinRoomAsync(int code);
         Task CreateRoomAsync(int code);

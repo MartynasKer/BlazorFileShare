@@ -1,4 +1,5 @@
-﻿using BlazorFileShare.Client.Domain;
+﻿using Blazored.Modal.Services;
+using BlazorFileShare.Client.Domain;
 using BlazorFileShare.Client.Services;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
@@ -11,7 +12,8 @@ using System.Threading.Tasks;
 namespace BlazorFileShare.Client.Pages
 {
     public partial class Connector : ComponentBase
-    {
+    { 
+
         [Inject]
         private IClientRoomService ClientRoomService { get; set; }
 
@@ -77,13 +79,13 @@ namespace BlazorFileShare.Client.Pages
                 await ClientRoomService.JoinRoomAsync(code);
             }
         }
-        private async Task OnFileChangeAll(InputFileChangeEventArgs args)
+        private void OnFileChangeAll(InputFileChangeEventArgs args)
         {
 
 
             foreach(var client in ClientRoomService.Clients)
             {
-                await OnFileChange(args, client);
+                OnFileChange(args, client.Name);
             }
 
 
@@ -103,7 +105,7 @@ namespace BlazorFileShare.Client.Pages
                     continue;
                 }
                 
-                using var stream = file.OpenReadStream(1099511627776);//max 1 TB
+                using var stream = file.OpenReadStream(1024*1024*1024);//max 1 GB
                 
                 byte[] buffer = new byte[1024 * 16]; // read in chunks of 16KB
                 int bytesRead;

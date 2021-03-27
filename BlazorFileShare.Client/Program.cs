@@ -1,3 +1,4 @@
+using Blazored.Modal;
 using BlazorFileShare.Client;
 using BlazorFileShare.Client.Services;
 using Microsoft.AspNetCore.Components;
@@ -26,7 +27,7 @@ namespace BlazorFileShare.Client
             builder.Services.AddScoped<IHubClient, HubClient>();
             builder.Services.AddScoped<IRTCInterop, RTCInterop>();
             builder.Services.AddScoped<IClientRoomService, ClientRoomService>();
-            
+            builder.Services.AddBlazoredModal();
 
             await builder.Build().RunAsync();
         }

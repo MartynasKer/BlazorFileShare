@@ -46,7 +46,7 @@ namespace BlazorFileShare.Client.Services
       
     
 
-        public async Task CreateRoomAsync(int roomCode, Action<Guid, string, int> returnAction)
+        public async Task CreateRoomAsync(int roomCode, Action<Guid, RoomMember, int> returnAction)
         {
             _hub.Remove("ConnectedToRoom");
             await _hub.SendAsync("CreateRoomAsync", roomCode);
@@ -70,7 +70,7 @@ namespace BlazorFileShare.Client.Services
             await _hub.SendAsync("DisconnectFromRoomAsync", roomId);
         }
 
-        public async Task JoinRoomAsync(int roomCode, Action<Guid, string, int> returnAction)
+        public async Task JoinRoomAsync(int roomCode, Action<Guid, RoomMember, int> returnAction)
         {
             _hub.Remove("ConnectedToRoom");
             await _hub.SendAsync("JoinRoomAsync", roomCode);

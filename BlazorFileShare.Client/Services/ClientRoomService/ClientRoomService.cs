@@ -29,14 +29,16 @@ namespace BlazorFileShare.Client.Services
             this.hubClient.OnIceCandidate += rTCInterop.AddIceAsync;
             this.rTCInterop.OnPeerLeft += (name) =>
             {
-                Clients.Remove(name);
+                var client = Clients.SingleOrDefault(x => x.Name == name);
+                Clients.Remove(client);
+
                 OnStatusChange?.Invoke();
 
             };
 
         }
-        public List<string> Clients { get; set; } = new List<string>();
-        public string MyName { get; private set; }
+        public List<RoomMember> Clients { get; set; } = new List<RoomMember>();
+        public RoomMember MyMember { get; private set; }
 
         public int RoomCode { get; private set; }
 
@@ -64,16 +66,16 @@ namespace BlazorFileShare.Client.Services
         }
 
 
-        private void OnRTCConnected(string name)
+        private void OnRTCConnected(RoomMember member)
         {
-            Clients.Add(name);
+            Clients.Add(member);
+            OnStatusChange.Invoke();
         }
 
         private async Task OnReceiveAnswerAsync(AnswerRequest request)
         {
             Console.WriteLine("received answer...");
-            await rTCInterop.SetSDPAnswerAsync(request, request.Name, OnRTCConnected);
-            Clients.Add(request.Name);
+            await rTCInterop.SetSDPAnswerAsync(request, request.Name, () => OnRTCConnected(request.RoomMember));
             OnStatusChange.Invoke();
         }
 
@@ -85,11 +87,10 @@ namespace BlazorFileShare.Client.Services
         private async Task OnPeerJoinedAsync(RoomMember member)
         {
             Console.WriteLine("peer joined");
-            await rTCInterop.SetSDPOfferAsync(member.Offer, member.Name, OnIceCandidateAsync, OnRTCConnected);
+            await rTCInterop.SetSDPOfferAsync(member.Offer, member.Name, OnIceCandidateAsync,()=> OnRTCConnected(member));
             var answer = await rTCInterop.CreateSDPAnswerAsync(member.Name, member.Offer.PeerConnectionId);
-            answer.Name = MyName;
+            answer.RoomMember = MyMember;
             await hubClient.SendAnswerAsync(answer, member.Name, _roomId);
-            Clients.Add(member.Name);
             OnStatusChange.Invoke();
 
         }
@@ -98,19 +99,19 @@ namespace BlazorFileShare.Client.Services
         {
             if (rTCIceCandidate.candidate is null || rTCIceCandidate is null)
                 return;
-       
+
             await hubClient.SignalIceAsync(name, peerId, rTCIceCandidate, _roomId);
         }
 
-        private async void OnJoinRoom(Guid roomId, string name, int memberCount)
+        private async void OnJoinRoom(Guid roomId, RoomMember member, int memberCount)
         {
-            MyName = name;
+            MyMember = member;
             _roomId = roomId;
             Connected = true;
             List<OfferRequest> offers = await rTCInterop.CreateSDPOffersAsync(memberCount, OnIceCandidateAsync);
 
-            offers.ForEach(x => x.Name = name);
-            await hubClient.SendOffersAsync(offers, name, _roomId);
+            offers.ForEach(x => x.Name = member.Name);
+            await hubClient.SendOffersAsync(offers, member.Name, _roomId);
             OnStatusChange.Invoke();
         }
         public async Task JoinRoomAsync(int code)
@@ -122,7 +123,7 @@ namespace BlazorFileShare.Client.Services
         {
             RoomCode = 0;
             _roomId = default;
-            MyName = null;
+            MyMember = null;
             Connected = false;
             Clients.Clear();
             OnStatusChange.Invoke();
@@ -134,7 +135,7 @@ namespace BlazorFileShare.Client.Services
             await hubClient.DisconnectFromRoomAsync(_roomId);
             rTCInterop.CloseConnections();
             ResetRoomInfo();
-            
+
 
         }
 
@@ -166,13 +167,13 @@ namespace BlazorFileShare.Client.Services
                 await Task.Delay(50);
             }
             return ack;
-           
+
 
         }
 
         public async Task ReconnectToRoomAsync()
         {
-            
+
             await hubClient.ReconectAsync();
             ResetRoomInfo();
         }

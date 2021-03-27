@@ -1,0 +1,47 @@
+﻿<h3></h3>
+
+<p>@Name has sent you a file: @FileName (@Size) </p>
+<p>Are you sure you want to download it?</p>
+<div class="form-row mt-3">
+    <div class="col-auto">
+        <button class="btn btn-success" @onclick="ModalInstance.CloseAsync">
+            Yes
+        </button>
+    </div>
+    <div class="col-auto">
+        <button class="btn btn-danger" @onclick="ModalInstance.CancelAsync">
+            No
+        </button>
+    </div>
+</div>
+@code {
+
+    [CascadingParameter] BlazoredModalInstance ModalInstance { get; set; }
+
+
+    private string Size { get
+        {
+            if (FileSize >= 1024 * 1024 * 1024)
+            {
+                return Math.Round(((double)FileSize / (1024 * 1024*1024)), 3).ToString() + "GB";
+            }
+            else if (FileSize >= 1024 * 1024)
+            {
+                return Math.Round(((double)FileSize / (1024 * 1024)), 3).ToString() + "MB";
+            }
+            else
+            {
+                return Math.Round(((double)FileSize / (1024)), 3).ToString() + "KB";
+            }
+        }
+    }
+
+    [Parameter]
+    public string Name { get; set; }
+    [Parameter]
+    public string FileName { get; set; }
+    [Parameter]
+    public long FileSize { get; set; }
+
+
+}
