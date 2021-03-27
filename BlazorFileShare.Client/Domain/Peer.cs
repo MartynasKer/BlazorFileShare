@@ -57,6 +57,7 @@ namespace BlazorFileShare.Client.Domain
             set
             {
                 _currentFileMetadata = value;
+                FileBuffer = new List<byte[]>();
                 ChunksReceived = 0;
             }
         }
@@ -136,6 +137,9 @@ namespace BlazorFileShare.Client.Domain
                 {
                     Console.WriteLine("downloading file");
                     FileDownloadAction?.Invoke(this);
+                    FileBuffer = new List<byte[]>();
+                    CurrentPayloadType = DataChannelPayloadType.Default;
+
                 }
                 return;
             }

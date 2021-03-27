@@ -19,7 +19,7 @@ namespace BlazorFileShare.Client.Domain
         {
             get
             {
-                return (int)(Size / (16 * 1024)) + 1;
+                return (int)((double)Size / (16 * 1024)) + 1;
             }
         }
 

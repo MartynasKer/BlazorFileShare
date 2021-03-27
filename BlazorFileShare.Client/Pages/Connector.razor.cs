@@ -37,6 +37,7 @@ namespace BlazorFileShare.Client.Pages
         
         }
 
+        bool CanSend { get { return ClientRoomService.Clients.Count == 0; } }
         bool CanConnect
         {
             get
@@ -112,12 +113,7 @@ namespace BlazorFileShare.Client.Pages
                 
                 while ((bytesRead = await stream.ReadAsync(buffer.AsMemory(0, buffer.Length))) > 0)
                 {
-                    if(bytesRead < buffer.Length)
-                    {
-                        buffer = new byte[bytesRead];
-                        ClientRoomService.SendFileChunk(buffer, name);
-                        break;
-                    }
+                    
                     ClientRoomService.SendFileChunk(buffer, name);
 
                 }

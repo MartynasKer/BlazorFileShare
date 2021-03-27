@@ -17,7 +17,7 @@
                 @if (State == UIState.Creating || State == UIState.Joining)
                 {
                     <div class="form-group mb-4">
-                        <label for="room-number">Room number</label>
+                        <label for="room-number">Room number (enter a 4 digit number)</label>
                         <input id="room-number" class="form-control" type="number" maxlength="4" placeholder="Enter room number" @bind-value:event="oninput" @bind-value="Code" />
                     </div>
                 }
@@ -72,7 +72,7 @@
                         <input class="form-control" type="text" placeholder="Enter message" @bind-value="message">
                     </div>
                     <div class="col-auto">
-                        <button class="btn btn-secondary" @onclick="SendMessage">
+                        <button class="btn btn-secondary" disabled="@CanSend" @onclick="SendMessage">
                             Send
                         </button>
                     </div>
@@ -83,12 +83,16 @@
                             Leave Room
                         </button>
                     </div>
-                    <div class="col-auto">
-                        <label for="file_input_all" class="btn btn-secondary">
-                            Upload to all
-                        </label>
-                        <InputFile OnChange="(e) => OnFileChangeAll(e)" id="file_input_all" class="d-none"></InputFile>
-                    </div>
+                    @if (!CanSend)
+                    {
+                        <div class="col-auto">
+
+                            <label for="file_input_all" class="btn btn-secondary">
+                                Upload to all
+                            </label>
+                            <InputFile OnChange="(e) => OnFileChangeAll(e)" id="file_input_all" class="d-none"></InputFile>
+                        </div>
+                    }
                 </div>
             }
         </div>
