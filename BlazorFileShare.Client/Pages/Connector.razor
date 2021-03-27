@@ -8,6 +8,7 @@
         <div class="col text-center" style="max-width: 480px;">
             @if (ClientRoomService.Connected)
             {
+                <h3 class="mb-2">room @ClientRoomService.RoomCode </h3>
                 <h1 class="mb-4">I am <span class="text-muted">@ClientRoomService.MyMember.Name</span></h1>
             }
             @if (!ClientRoomService.Connected)

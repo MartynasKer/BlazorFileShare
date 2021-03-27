@@ -63,6 +63,7 @@ namespace BlazorFileShare.Client.Services
         public async Task CreateRoomAsync(int code)
         {
             await hubClient.CreateRoomAsync(code, OnJoinRoom);
+            RoomCode = code;
         }
 
 
@@ -105,6 +106,7 @@ namespace BlazorFileShare.Client.Services
 
         private async void OnJoinRoom(Guid roomId, RoomMember member, int memberCount)
         {
+            
             MyMember = member;
             _roomId = roomId;
             Connected = true;
@@ -117,6 +119,7 @@ namespace BlazorFileShare.Client.Services
         public async Task JoinRoomAsync(int code)
         {
             await hubClient.JoinRoomAsync(code, OnJoinRoom);
+            RoomCode = code;
         }
 
         void ResetRoomInfo()
