@@ -3,7 +3,9 @@ using BlazorFileShare.Extensions;
 using BlazorFileShare.Services;
 using BlazorFileShare.Shared;
 using BlazorFileShare.Shared.Domain;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.SignalR;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
@@ -17,12 +19,13 @@ namespace BlazorFileShare.Hubs
     {
         private readonly IRoomService _roomService;
         private readonly ILogger<SignalingHub> logger;
+        private readonly IWebHostEnvironment _hostEnvironment;
 
-        public SignalingHub(IRoomService roomService, ILogger<SignalingHub> logger)
+        public SignalingHub(IRoomService roomService, ILogger<SignalingHub> logger, IWebHostEnvironment hostEnvironment)
         {
             _roomService = roomService;
             this.logger = logger;
-            
+            _hostEnvironment = hostEnvironment;
         }
         public override async Task OnDisconnectedAsync(Exception exception)
         {
@@ -31,7 +34,7 @@ namespace BlazorFileShare.Hubs
 
         public async Task JoinRoomAsync(int roomId)
         {
-            var roomRequest = new RoomRequest(roomId, Context.GetHttpContext());
+            var roomRequest = new RoomRequest(roomId, Context.GetHttpContext(), _hostEnvironment.IsDevelopment());
             var room = _roomService.JoinRoom(roomRequest);
             if(room == null)
             {
@@ -51,7 +54,7 @@ namespace BlazorFileShare.Hubs
 
         public async Task CreateRoomAsync(int roomId)
         {
-            var roomRequest = new RoomRequest(roomId, Context.GetHttpContext());
+            var roomRequest = new RoomRequest(roomId, Context.GetHttpContext(), _hostEnvironment.IsDevelopment());
             var room = _roomService.CreateRoom(roomRequest);
             if(room == null)
             {

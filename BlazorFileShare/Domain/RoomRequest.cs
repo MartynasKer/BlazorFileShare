@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,11 +9,12 @@ namespace BlazorFileShare.Domain
 {
     public struct RoomRequest
     {
-        public RoomRequest(int code,HttpContext context)
+        public RoomRequest(int code,HttpContext context, bool development=false)
         {
             Code = code;
             Ip = context.Connection.RemoteIpAddress.ToString();
-            Ip = "test";
+            if(development)
+                Ip = "test";
         }
 
         public string Ip { get; set; }
