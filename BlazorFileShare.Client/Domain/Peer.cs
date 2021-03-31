@@ -13,7 +13,7 @@ namespace BlazorFileShare.Client.Domain
         private readonly Action<Peer> OnClose;
         event Action<Message> onMessage;
         private Func<string, Guid, RTCIceCandidateInit, Task> onIceCandidate;
-
+        private bool BufferIsHigh;
         public event Action<Peer, FileMetadata> OnFileMetadata; 
         public Queue<RTCIceCandidateInit> iceQueue = new();
         public Peer(string name,
@@ -66,13 +66,18 @@ namespace BlazorFileShare.Client.Domain
 
         public float Progress { get { return ChunksReceived / CurrentFileMetadata.TotalChunks; } }
 
-        public void SendFileChunk(byte[] chunk)
+        public async Task SendFileChunkAsync(byte[] chunk)
         {
-            if (RTCDataChannel.ReadyState == RTCDataChannelState.Open)
+            if (RTCDataChannel.ReadyState != RTCDataChannelState.Open)
             {
-                RTCDataChannel.Send(chunk);
-
+                return;
             }
+            while (BufferIsHigh)
+            {
+                await Task.Delay(5);
+            }
+            RTCDataChannel.Send(chunk);
+            BufferIsHigh = true;
         }
         private void RegisterDC(object sender, RTCDataChannel dc)
         {
@@ -81,6 +86,8 @@ namespace BlazorFileShare.Client.Domain
             dc.OnClose += (s, e) => OnClose?.Invoke(this);
             dc.OnOpen += (s, e) => Console.WriteLine("its open!");
             dc.OnOpen += (s, e) => OnConnected?.Invoke();
+            dc.OnBuffer += (s, e) => { BufferIsHigh = false; };
+
             Console.WriteLine(dc.ReadyState);
             RTCDataChannel = dc;
         }
@@ -91,6 +98,7 @@ namespace BlazorFileShare.Client.Domain
             {
                 RTCDataChannel.Send(DataChannelPayloadType.Metadata.ToString());
                 RTCDataChannel.Send(metadata.Serialize());
+                BufferIsHigh = true;
             }
         }
 
@@ -115,7 +123,9 @@ namespace BlazorFileShare.Client.Domain
             if (RTCDataChannel.ReadyState == RTCDataChannelState.Open)
             {
                 RTCDataChannel.Send(message);
+                BufferIsHigh = true;
             }
+            
         }
         void ProcessData(object sender, byte[] e)
         {
@@ -133,8 +143,13 @@ namespace BlazorFileShare.Client.Domain
 
                 FileBuffer.Add(e);
                 ChunksReceived++;
+                if(ChunksReceived % 64==0)
+                {
+                    Console.WriteLine($"received {ChunksReceived} out of {CurrentFileMetadata.TotalChunks}");
+                }
                 if (ChunksReceived == CurrentFileMetadata.TotalChunks)
                 {
+                    Console.WriteLine($"received {ChunksReceived} out of {CurrentFileMetadata.TotalChunks}");
                     Console.WriteLine("downloading file");
                     FileDownloadAction?.Invoke(this);
                     FileBuffer = new List<byte[]>();
@@ -151,9 +166,10 @@ namespace BlazorFileShare.Client.Domain
         {
             RTCDataChannel = RTCPeerConnection.createDataChannel(channel);
             RTCDataChannel.OnOpen += (s, e) => Console.WriteLine("its open!");
-            RTCDataChannel.OnClose += (s, e) => OnClose.Invoke(this);
+            RTCDataChannel.OnClose += (s, e) => OnClose?.Invoke(this);
             RTCDataChannel.OnMessage += ProcessMessage;
             RTCDataChannel.OnDataMessage += ProcessData;
+            RTCDataChannel.OnBuffer += (s, e) => { BufferIsHigh = false; };
 
 
         }

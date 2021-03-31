@@ -7,6 +7,7 @@ namespace System.Net.WebRTC
     {
         private JSObject hostObject;
         private Action<JSObject> onMessage;
+        private Action<JSObject> onBuffer;
         private Action<JSObject> onOpen;
         private Action<JSObject> onClose;
         // Stages of this class. 
@@ -20,11 +21,14 @@ namespace System.Net.WebRTC
         public event EventHandler<byte[]> OnDataMessage;
         public event EventHandler<string> OnMessage;
         public event EventHandler OnOpen;
+        public event EventHandler OnBuffer;
         public event EventHandler OnClose;
         public RTCDataChannel(JSObject ho)
         {
             cts = new CancellationTokenSource();
             this.hostObject = ho;
+
+
 
             onMessage = new Action<JSObject>((messageEvent) =>
             {
@@ -95,6 +99,15 @@ namespace System.Net.WebRTC
             // Attach the onMessage callaback
             hostObject.Invoke("addEventListener", "message", onMessage);
 
+            onBuffer = new Action<JSObject>((e)=>
+            {
+                this.OnBuffer?.Invoke(this, EventArgs.Empty);
+                e.Dispose();
+
+
+            });
+
+            hostObject.SetObjectProperty("onbufferedamountlow", onBuffer);
             onOpen = new Action<JSObject>((messageEvent) =>
             {
                 this.OnOpen?.Invoke(this, EventArgs.Empty);

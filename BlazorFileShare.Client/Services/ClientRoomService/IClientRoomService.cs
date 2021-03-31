@@ -22,7 +22,7 @@ namespace BlazorFileShare.Client.Services
         Task LeaveRoomAsync();
         void SendTestMessage(string message);
         void SendBuffer(byte[] buffer);
-        void SendFileChunk(byte[] buffer, string name);
+        Task SendFileChunkAsync(byte[] buffer, string name);
         Task<bool> SendFileMetadataAsync(FileMetadata metadata, string name);
         Task ReconnectToRoomAsync();
     }

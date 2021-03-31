@@ -21,7 +21,7 @@ namespace BlazorFileShare.Client.Services
         Task SetSDPOfferAsync(OfferRequest offer, string name, Func<string, Guid, RTCIceCandidateInit, Task> OnIceCandidate, Action onRTCConnected);
         void SendMessageToAll(string message);
         void SendBufferToAll(byte[] buffer);
-        void SendChunk(byte[] buffer, string name);
+        Task SendChunkAsync(byte[] buffer, string name);
         void SendMetadata(FileMetadata metadata, string name);
         void CloseConnections();
         void AddListener(Action<string> action, string name);

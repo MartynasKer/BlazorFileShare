@@ -1,10 +1,13 @@
 function downloadFromByteArray(options) {
     // Convert base64 string to numbers array.
     var numArray = atob(options.byteArray).split('').map(function (c) { return c.charCodeAt(0); });
+    console.log("converted to num array");
     // Convert numbers array to Uint8Array object.
     var uint8Array = new Uint8Array(numArray);
+    console.log("converted to uint array");
     // Wrap it by Blob object.
     var blob = new Blob([uint8Array], { type: options.contentType });
+    console.log("blob created");
     // Create "object URL" that is linked to the Blob object.
     var url = URL.createObjectURL(blob);
     // Invoke download helper function that implemented in 

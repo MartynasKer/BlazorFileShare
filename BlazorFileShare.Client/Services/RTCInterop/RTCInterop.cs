@@ -1,4 +1,5 @@
-﻿using Blazored.Modal;
+﻿using Blazor.DownloadFileFast.Interfaces;
+using Blazored.Modal;
 using Blazored.Modal.Services;
 using BlazorFileShare.Client.Domain;
 using BlazorFileShare.Client.Shared;
@@ -19,15 +20,17 @@ namespace BlazorFileShare.Client.Services
         private readonly IModalService modalService;
 
         private readonly IJSRuntime jSRuntime;
+        private readonly IBlazorDownloadFileService blazorDownloadFileService;
 
         public event Action<string> OnPeerLeft;
 
         public event Action<Message> OnMessage;
 
-        public RTCInterop(IJSRuntime jSRuntime, IModalService modalService)
+        public RTCInterop(IJSRuntime jSRuntime, IModalService modalService, IBlazorDownloadFileService blazorDownloadFileService)
         {
             this.jSRuntime = jSRuntime;
             this.modalService = modalService;
+            this.blazorDownloadFileService = blazorDownloadFileService;
         }
 
         public async Task<AnswerRequest> CreateSDPAnswerAsync(string name, Guid peerId)
@@ -43,6 +46,7 @@ namespace BlazorFileShare.Client.Services
         private void RemovePeer(Peer peer)
         {
             ClientList.Remove(peer);
+            Console.WriteLine($"peer {peer.Name} connection closed");
             OnPeerLeft?.Invoke(peer.Name);
         }
         public async Task<List<OfferRequest>> CreateSDPOffersAsync(int memberCount, Func<string, Guid, RTCIceCandidateInit, Task> OnIceCandidate)
@@ -82,16 +86,10 @@ namespace BlazorFileShare.Client.Services
             }
         }
 
-        void DownloadFile(Peer peer)
+        async void DownloadFile(Peer peer)
         {
 
-            var task = jSRuntime.InvokeVoidAsync("downloadFromByteArray",
-                new
-                {
-                    ByteArray = peer.FileBuffer.SelectMany(a => a).ToArray(),
-                    FileName = peer.CurrentFileMetadata.Name,
-                    ContentType = peer.CurrentFileMetadata.ContentType
-                });
+            await blazorDownloadFileService.DownloadFileAsync(peer.CurrentFileMetadata.Name, peer.FileBuffer.SelectMany(a=>a).ToArray());
 
         }
         public async Task SetSDPAnswerAsync(AnswerRequest answerRequest, string name, Action onRTCConnected)
@@ -162,9 +160,9 @@ namespace BlazorFileShare.Client.Services
             }
         }
 
-        public void SendChunk(byte[] buffer, string name)
+        public async Task SendChunkAsync(byte[] buffer, string name)
         {
-            ClientList.SingleOrDefault(x => x.Name == name).SendFileChunk(buffer);
+            await ClientList.SingleOrDefault(x => x.Name == name).SendFileChunkAsync(buffer);
         }
 
         public void SendMetadata(FileMetadata metadata, string name)

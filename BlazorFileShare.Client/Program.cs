@@ -28,7 +28,7 @@ namespace BlazorFileShare.Client
             builder.Services.AddScoped<IRTCInterop, RTCInterop>();
             builder.Services.AddScoped<IClientRoomService, ClientRoomService>();
             builder.Services.AddBlazoredModal();
-
+            builder.Services.AddBlazorDownloadFile();
             await builder.Build().RunAsync();
         }
     }

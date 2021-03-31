@@ -110,13 +110,18 @@ namespace BlazorFileShare.Client.Pages
                 
                 byte[] buffer = new byte[1024 * 16]; // read in chunks of 16KB
                 int bytesRead;
-                
+                int chunk_number=0;
                 while ((bytesRead = await stream.ReadAsync(buffer.AsMemory(0, buffer.Length))) > 0)
                 {
-                    
-                    ClientRoomService.SendFileChunk(buffer, name);
+                    chunk_number++;
+                    if (chunk_number % 64 == 0)
+                    {
+                        Console.WriteLine(chunk_number);
+                    }
+                    await ClientRoomService.SendFileChunkAsync(buffer, name);
 
                 }
+                Console.WriteLine($"finished sending file: total {chunk_number} chunks");
 
             }
         }
