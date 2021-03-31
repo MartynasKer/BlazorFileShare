@@ -15,6 +15,7 @@ namespace BlazorFileShare.Client.Domain
         public DateTimeOffset LastModified { get; set; }
         public string ContentType { get; set; }
 
+
         public int TotalChunks
         {
             get

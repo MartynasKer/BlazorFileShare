@@ -14,6 +14,8 @@ namespace BlazorFileShare.Client.Services
         event Action<string> OnPeerLeft;
 
         event Action<Message> OnMessage;
+        event Action<float> OnReportProgress;
+
         Task<AnswerRequest> CreateSDPAnswerAsync(string name, Guid peerId);
         Task SetSDPAnswerAsync(AnswerRequest answer, string name, Action onRTCConnected);
         Task<List<OfferRequest>> CreateSDPOffersAsync(int memberCount, Func<string, Guid, RTCIceCandidateInit, Task> OnIceCandidate);

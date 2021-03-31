@@ -21,6 +21,7 @@ namespace BlazorFileShare.Client.Services
 
         private readonly IJSRuntime jSRuntime;
         private readonly IBlazorDownloadFileService blazorDownloadFileService;
+        public event Action<float> OnReportProgress;
 
         public event Action<string> OnPeerLeft;
 
@@ -56,6 +57,7 @@ namespace BlazorFileShare.Client.Services
             {
 
                 var peer = new Peer(null, default, OnIceCandidate, DownloadFile, RemovePeer, OnMessage.Invoke);
+                peer.ReportProgress += OnReportProgress;
                 peer.OnFileMetadata += OnMetadataAsync;
                 peer.CreateDataChannel(i.ToString());
                 var result = await peer.RTCPeerConnection.createOffer();
@@ -109,6 +111,7 @@ namespace BlazorFileShare.Client.Services
         {
             var peer = new Peer(name, offer.PeerConnectionId, OnIceCandidate, DownloadFile, RemovePeer, OnMessage.Invoke, onRTCConnected);
             peer.OnFileMetadata += OnMetadataAsync;
+            peer.ReportProgress += OnReportProgress;
             var offerSDP = new RTCSessionDescriptionInit(offer.Offer, RTCSdpType.Offer);
             await peer.RTCPeerConnection.setRemoteDescription(offerSDP);
             ClientList.Add(peer);

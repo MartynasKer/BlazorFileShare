@@ -13,6 +13,7 @@ namespace BlazorFileShare.Client.Domain
         private readonly Action<Peer> OnClose;
         event Action<Message> onMessage;
         private bool BufferIsHigh;
+        public event Action<float> ReportProgress;
         private Func<string, Guid, RTCIceCandidateInit, Task> onIceCandidate;
         public event Action<Peer, FileMetadata> OnFileMetadata;
         public Queue<RTCIceCandidateInit> iceQueue = new();
@@ -64,7 +65,7 @@ namespace BlazorFileShare.Client.Domain
 
         public List<byte[]> FileBuffer { get; set; } = new List<byte[]>();
         private Queue<byte[]> SendBuffer = new();
-        public float Progress { get { return ChunksReceived / CurrentFileMetadata.TotalChunks; } }
+        public float Progress { get { return ChunksReceived / (float)CurrentFileMetadata.TotalChunks; } }
 
 
         void SendChunk()
@@ -156,7 +157,8 @@ namespace BlazorFileShare.Client.Domain
                 ChunksReceived++;
                 if (ChunksReceived % 64 == 0)
                 {
-                    Console.WriteLine($"received {ChunksReceived} out of {CurrentFileMetadata.TotalChunks}");
+                    ReportProgress?.Invoke(Progress);
+                    Console.WriteLine($"received {ChunksReceived} out of {CurrentFileMetadata.TotalChunks}; {Progress}%");
                 }
                 if (ChunksReceived == CurrentFileMetadata.TotalChunks)
                 {
