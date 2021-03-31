@@ -64,7 +64,7 @@
                         }
                         Upload to @client.Name
                     </label>
-                    <InputFile OnChange="async (e) => await OnFileChange(e, client.Name)" id="@("file_input_"+ client.Name)" class="d-none"></InputFile>
+                    <InputFile OnChange="async (e) => await OnFileChange(e, client.Name)" id="@("file_input_"+ client.Name)" class="d-none" multiple></InputFile>
                 }
 
                 <div class="form-row mt-3">
@@ -90,7 +90,7 @@
                             <label for="file_input_all" class="btn btn-secondary">
                                 Upload to all
                             </label>
-                            <InputFile OnChange="(e) => OnFileChangeAll(e)" id="file_input_all" class="d-none"></InputFile>
+                            <InputFile OnChange="(e) => OnFileChangeAll(e)" id="file_input_all" class="d-none" multiple></InputFile>
                         </div>
                     }
                 </div>

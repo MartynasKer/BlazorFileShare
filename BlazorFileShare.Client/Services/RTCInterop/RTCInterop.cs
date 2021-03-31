@@ -162,7 +162,7 @@ namespace BlazorFileShare.Client.Services
 
         public async Task SendChunkAsync(byte[] buffer, string name)
         {
-            await ClientList.SingleOrDefault(x => x.Name == name).SendFileChunkAsync(buffer);
+            await ClientList.SingleOrDefault(x => x.Name == name).SendChunkAsync(buffer);
         }
 
         public void SendMetadata(FileMetadata metadata, string name)
