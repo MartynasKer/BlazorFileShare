@@ -147,10 +147,9 @@ namespace BlazorFileShare.Client.Services
             rTCInterop.SendBufferToAll(buffer);
         }
 
-        public async Task SendFileChunkAsync(byte[] buffer, string name)
+        public async Task SendFileChunkAsync(byte[] buffer, string name, int chunk_number)
         {
-            await rTCInterop.SendChunkAsync(buffer, name);
-
+            await rTCInterop.SendChunkAsync(buffer, name, chunk_number);
         }
         public async Task<bool> SendFileMetadataAsync(FileMetadata metadata, string name)
         {

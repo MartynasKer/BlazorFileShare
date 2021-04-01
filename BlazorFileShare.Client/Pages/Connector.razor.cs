@@ -118,7 +118,8 @@ namespace BlazorFileShare.Client.Pages
                     {
                         Console.WriteLine(chunk_number);
                     }
-                    await ClientRoomService.SendFileChunkAsync(buffer, name);
+                    
+                    await ClientRoomService.SendFileChunkAsync(buffer, name, chunk_number);
 
                 }
                 Console.WriteLine($"finished sending file: total {chunk_number} chunks");

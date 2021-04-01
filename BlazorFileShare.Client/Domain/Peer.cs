@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.WebRTC;
@@ -64,34 +65,23 @@ namespace BlazorFileShare.Client.Domain
         }
 
         public List<byte[]> FileBuffer { get; set; } = new List<byte[]>();
-        private Queue<byte[]> SendBuffer = new();
         public float Progress { get { return ChunksReceived / (float)CurrentFileMetadata.TotalChunks; } }
 
 
-        void SendChunk()
+       
+        public async Task SendChunkAsync(byte[] chunk, int chunk_number)
         {
             if (RTCDataChannel.ReadyState != RTCDataChannelState.Open)
             {
                 return;
             }
-            if (SendBuffer.Count == 0)
+            while (BufferIsHigh)
             {
-                BufferIsHigh = false;
-                return;
-            }
-            var chunk = SendBuffer.Dequeue();
-            RTCDataChannel.Send(chunk);
-            BufferIsHigh = true;
-        }
-        public async Task SendChunkAsync(byte[] chunk)
-        {
-            await Task.Run(() => SendBuffer.Enqueue(chunk));
-            if (BufferIsHigh == false)
-            {
-                SendChunk();
+                await Task.Delay(1);
             }
 
-            
+            RTCDataChannel.Send(chunk);
+            BufferIsHigh = true;
         }
         private void RegisterDC(object sender, RTCDataChannel dc)
         {
@@ -100,7 +90,7 @@ namespace BlazorFileShare.Client.Domain
             dc.OnClose += (s, e) => OnClose?.Invoke(this);
             dc.OnOpen += (s, e) => Console.WriteLine("its open!");
             dc.OnOpen += (s, e) => OnConnected?.Invoke();
-            dc.OnBuffer += (s, e) => { SendChunk();  };
+            dc.OnBuffer += (s, e) => { BufferIsHigh = false;  };
 
             Console.WriteLine(dc.ReadyState);
             RTCDataChannel = dc;
@@ -122,10 +112,14 @@ namespace BlazorFileShare.Client.Domain
             {
                 CurrentPayloadType = result;
             }
-            else if (e != "ack" && e != "cancel")
+            else if (e != "ack" && e != "cancel" && !e.StartsWith("chunk"))
             {
                 Console.WriteLine(e);
                 onMessage?.Invoke(new Message(e, Name));
+            }
+            if (e.StartsWith("chunk"))
+            {
+                Console.WriteLine(e);
             }
             return;
 
@@ -182,7 +176,7 @@ namespace BlazorFileShare.Client.Domain
             RTCDataChannel.OnClose += (s, e) => OnClose?.Invoke(this);
             RTCDataChannel.OnMessage += ProcessMessage;
             RTCDataChannel.OnDataMessage += ProcessData;
-            RTCDataChannel.OnBuffer += (s, e) => { SendChunk(); };
+            RTCDataChannel.OnBuffer += (s, e) => { BufferIsHigh = false; };
 
 
         }
